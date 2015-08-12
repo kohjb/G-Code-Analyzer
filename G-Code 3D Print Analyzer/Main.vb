@@ -74,17 +74,6 @@ Public Class frmMain
     Private Sub glc3DView_Load(sender As Object, e As EventArgs) Handles glc3DView.Load
         'Debug.Print("GL Cleared")
         blnGLLoaded = True
-        hsbCameraX.Value = 185 : hsbCameraY.Value = 74 : hsbCameraZ.Value = 63
-        CameraPos = New Vector3(hsbCameraX.Value, hsbCameraY.Value, hsbCameraZ.Value)
-        hsbCameraZoom.Value = 90
-        CameraFOV = hsbCameraZoom.Value
-
-        hsbTargetX.Value = 144 : hsbTargetY.Value = 74 : hsbTargetZ.Value = 39
-        TargetPos = New Vector3(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value)
-        TgtXMin = 150 : TgtXMax = 0 : TgtYMin = 150 : TgtYMax = 0 : TgtZMin = 150 : TgtZMax = 0
-
-        CameraUp = New Vector3(0, 0, 1)
-
     End Sub
 
     Private Sub glc3DView_Paint(sender As Object, e As PaintEventArgs) Handles glc3DView.Paint
@@ -210,7 +199,7 @@ Public Class frmMain
                             End If
                             If Strings.Left(strToken(j), 1) = "Z" Then
                                 .Z = Mid(strToken(j), 2)
-                                Debug.Print(.Z & ", " & strToken(j) & ":" & Mid(strToken(j), 2) & " : " & TgtZMax)
+                                'Debug.Print(.Z & ", " & strToken(j) & ":" & Mid(strToken(j), 2) & " : " & TgtZMax)
                                 'KJB: Can't get mid correctly? 
                                 If Not .Params.Contains("E-") Then
                                     If .Z < TgtZMin Then TgtZMin = .Z
@@ -304,7 +293,7 @@ Public Class frmMain
         Dim lastX, lastY, lastZ, lastE As Single
         Dim blnAbsoluteMode As Boolean = True
         Dim nstart, nend As Integer
-        Dim zcolor As Color
+        Dim zcolor1, zcolor2 As Color
 
         'Draw all layers, 1 layer, or layer range.
         If optDrawAll.Checked Then
@@ -350,14 +339,33 @@ Public Class frmMain
                         End If
                         'Change layer color
                         If .Params.Contains("Z") Then
-                            Rnd(-1)
-                            Randomize(.Layer + 1)
-                            zcolor = Color.FromArgb(RGB(CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd()))))
+                            If optColorRainbow.Checked Then
+                                If .Layer Mod 2 = 0 Then
+                                    zcolor1 = Color.FromArgb(RGB(0, 255, 0))
+                                    zcolor2 = Color.FromArgb(RGB(255, 0, 0))
+                                Else
+                                    zcolor1 = Color.FromArgb(RGB(0, 0, 255))
+                                    zcolor2 = Color.FromArgb(RGB(255, 255, 0))
+                                End If
+                            ElseIf optColorLayers.Checked Then
+                                If .Layer Mod 2 = 0 Then
+                                    zcolor1 = Color.FromArgb(RGB(0, 0, 255))
+                                    zcolor2 = Color.FromArgb(RGB(0, 0, 255))
+                                Else
+                                    zcolor1 = Color.FromArgb(RGB(0, 255, 0))
+                                    zcolor2 = Color.FromArgb(RGB(0, 255, 0))
+                                End If
+                            Else
+                                zcolor1 = Color.FromArgb(RGB(128, 128, 128))
+                                zcolor2 = Color.FromArgb(RGB(128, 128, 128))
+                            End If
+
+                            'zcolor = Color.FromArgb(RGB(CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd()))))
                         End If
 
-                        'Draw only when there is some extrusion
-                        If .Params.Contains("E") And Not .Params.Contains("E-") Then
-                            DrawLine(New Vector3(lastX, lastY, lastZ), New Vector3(curX, curY, curZ), zcolor)
+                            'Draw only when there is some extrusion
+                            If .Params.Contains("E") And Not .Params.Contains("E-") Then
+                            DrawLine(New Vector3(lastX, lastY, lastZ), New Vector3(curX, curY, curZ), zcolor1, zcolor2)
                         End If
                         lastX = curX
                         lastY = curY
@@ -399,12 +407,13 @@ Public Class frmMain
         Next
     End Sub
 
-    Private Sub DrawLine(Pt1 As Vector3, Pt2 As Vector3, c As Color)
-        'Draw line
+    Private Sub DrawLine(Pt1 As Vector3, Pt2 As Vector3, c1 As Color, c2 As Color)
+        'Draw line from Pt1 to Pt2 in colors C1 to C2
         'Debug.Write(" Line :  (" & Pt1(0) & ", " & Pt1(1) & ", " & Pt1(2) & ") - (" & Pt2(0) & ", " & Pt2(1) & ", " & Pt2(2) & ")")
         GL.Begin(BeginMode.Lines)
-        GL.Color3(c)
+        GL.Color3(c1)
         GL.Vertex3(Pt1)
+        GL.Color3(c2)
         GL.Vertex3(Pt2)
         GL.End()
     End Sub
@@ -473,6 +482,20 @@ Public Class frmMain
 
     End Sub
 
+    Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        hsbCameraX.Value = 185 : hsbCameraY.Value = 74 : hsbCameraZ.Value = 63
+        CameraPos = New Vector3(hsbCameraX.Value, hsbCameraY.Value, hsbCameraZ.Value)
+        hsbCameraZoom.Value = 90
+        CameraFOV = hsbCameraZoom.Value
+
+        hsbTargetX.Value = 144 : hsbTargetY.Value = 74 : hsbTargetZ.Value = 39
+        TargetPos = New Vector3(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value)
+        TgtXMin = 150 : TgtXMax = 0 : TgtYMin = 150 : TgtYMax = 0 : TgtZMin = 150 : TgtZMax = 0
+
+        CameraUp = New Vector3(0, 0, 1)
+
+    End Sub
+
 #Region "UI Interaction section"
     Public IsDragging As Boolean = False
     Public StartPoint, FirstPoint, LastPoint As Point
@@ -492,7 +515,7 @@ Public Class frmMain
             Dim dTheta, Theta, ThetaZ, dX, dY, dZ, dR, dRz As Single
             Dim blnDraw As Boolean = False
             Dim EndPoint As Point = glc3DView.PointToScreen(New Point(e.X, e.Y))
-            Dim Sensitivity As Integer = 5     'The number of degrees to move with each mouse move
+            Dim Sensitivity As Integer = 1     'The number of degrees to move with each mouse move
             'Debug.Print(EndPoint.X & ", " & EndPoint.Y)
 
             'Amount of X movement = amount of degrees of rotation in horizontal plane

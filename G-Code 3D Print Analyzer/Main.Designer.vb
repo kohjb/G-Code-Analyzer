@@ -39,7 +39,6 @@ Partial Class frmMain
         Me.btnDebug = New System.Windows.Forms.Button()
         Me.optDrawAll = New System.Windows.Forms.RadioButton()
         Me.optDrawOne = New System.Windows.Forms.RadioButton()
-        Me.Label3 = New System.Windows.Forms.Label()
         Me.optDrawFromTo = New System.Windows.Forms.RadioButton()
         Me.Label4 = New System.Windows.Forms.Label()
         Me.Label5 = New System.Windows.Forms.Label()
@@ -61,9 +60,16 @@ Partial Class frmMain
         Me.nudBacklashX = New System.Windows.Forms.NumericUpDown()
         Me.nudBacklashY = New System.Windows.Forms.NumericUpDown()
         Me.nudBacklashZ = New System.Windows.Forms.NumericUpDown()
+        Me.optColorSolid = New System.Windows.Forms.RadioButton()
+        Me.optColorLayers = New System.Windows.Forms.RadioButton()
+        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.optColorRainbow = New System.Windows.Forms.RadioButton()
         CType(Me.nudBacklashX, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashY, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashZ, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.GroupBox1.SuspendLayout()
+        Me.GroupBox2.SuspendLayout()
         Me.SuspendLayout()
         '
         'ofdgCodeFile
@@ -122,6 +128,7 @@ Partial Class frmMain
         '
         Me.rtbInterpreted.Location = New System.Drawing.Point(12, 47)
         Me.rtbInterpreted.Name = "rtbInterpreted"
+        Me.rtbInterpreted.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.rtbInterpreted.Size = New System.Drawing.Size(258, 511)
         Me.rtbInterpreted.TabIndex = 6
         Me.rtbInterpreted.Text = ""
@@ -154,6 +161,7 @@ Partial Class frmMain
         Me.glc3DView.Location = New System.Drawing.Point(285, 48)
         Me.glc3DView.Margin = New System.Windows.Forms.Padding(4)
         Me.glc3DView.Name = "glc3DView"
+        Me.glc3DView.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.glc3DView.Size = New System.Drawing.Size(637, 510)
         Me.glc3DView.TabIndex = 9
         Me.glc3DView.VSync = False
@@ -209,8 +217,9 @@ Partial Class frmMain
         '
         Me.optDrawAll.AutoSize = True
         Me.optDrawAll.Checked = True
-        Me.optDrawAll.Location = New System.Drawing.Point(938, 494)
+        Me.optDrawAll.Location = New System.Drawing.Point(17, 22)
         Me.optDrawAll.Name = "optDrawAll"
+        Me.optDrawAll.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.optDrawAll.Size = New System.Drawing.Size(36, 17)
         Me.optDrawAll.TabIndex = 13
         Me.optDrawAll.TabStop = True
@@ -220,27 +229,20 @@ Partial Class frmMain
         'optDrawOne
         '
         Me.optDrawOne.AutoSize = True
-        Me.optDrawOne.Location = New System.Drawing.Point(938, 518)
+        Me.optDrawOne.Location = New System.Drawing.Point(17, 41)
         Me.optDrawOne.Name = "optDrawOne"
+        Me.optDrawOne.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.optDrawOne.Size = New System.Drawing.Size(83, 17)
         Me.optDrawOne.TabIndex = 13
         Me.optDrawOne.Text = "Single Layer"
         Me.optDrawOne.UseVisualStyleBackColor = True
         '
-        'Label3
-        '
-        Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(938, 479)
-        Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(81, 13)
-        Me.Label3.TabIndex = 11
-        Me.Label3.Text = "Layers to Draw:"
-        '
         'optDrawFromTo
         '
         Me.optDrawFromTo.AutoSize = True
-        Me.optDrawFromTo.Location = New System.Drawing.Point(938, 541)
+        Me.optDrawFromTo.Location = New System.Drawing.Point(17, 60)
         Me.optDrawFromTo.Name = "optDrawFromTo"
+        Me.optDrawFromTo.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.optDrawFromTo.Size = New System.Drawing.Size(64, 17)
         Me.optDrawFromTo.TabIndex = 13
         Me.optDrawFromTo.Text = "From-To"
@@ -441,12 +443,75 @@ Partial Class frmMain
         Me.nudBacklashZ.TabIndex = 23
         Me.nudBacklashZ.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
+        'optColorSolid
+        '
+        Me.optColorSolid.AutoSize = True
+        Me.optColorSolid.Checked = True
+        Me.optColorSolid.Location = New System.Drawing.Point(6, 19)
+        Me.optColorSolid.Name = "optColorSolid"
+        Me.optColorSolid.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.optColorSolid.Size = New System.Drawing.Size(48, 17)
+        Me.optColorSolid.TabIndex = 13
+        Me.optColorSolid.TabStop = True
+        Me.optColorSolid.Text = "Solid"
+        Me.optColorSolid.UseVisualStyleBackColor = True
+        '
+        'optColorLayers
+        '
+        Me.optColorLayers.AutoSize = True
+        Me.optColorLayers.Location = New System.Drawing.Point(6, 38)
+        Me.optColorLayers.Name = "optColorLayers"
+        Me.optColorLayers.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.optColorLayers.Size = New System.Drawing.Size(56, 17)
+        Me.optColorLayers.TabIndex = 13
+        Me.optColorLayers.Text = "Layers"
+        Me.optColorLayers.UseVisualStyleBackColor = True
+        '
+        'GroupBox1
+        '
+        Me.GroupBox1.Controls.Add(Me.optDrawFromTo)
+        Me.GroupBox1.Controls.Add(Me.optDrawOne)
+        Me.GroupBox1.Controls.Add(Me.optDrawAll)
+        Me.GroupBox1.Location = New System.Drawing.Point(942, 472)
+        Me.GroupBox1.Name = "GroupBox1"
+        Me.GroupBox1.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.GroupBox1.Size = New System.Drawing.Size(108, 85)
+        Me.GroupBox1.TabIndex = 24
+        Me.GroupBox1.TabStop = False
+        Me.GroupBox1.Text = "Layers to Draw"
+        '
+        'GroupBox2
+        '
+        Me.GroupBox2.Controls.Add(Me.optColorRainbow)
+        Me.GroupBox2.Controls.Add(Me.optColorLayers)
+        Me.GroupBox2.Controls.Add(Me.optColorSolid)
+        Me.GroupBox2.Location = New System.Drawing.Point(1064, 472)
+        Me.GroupBox2.Name = "GroupBox2"
+        Me.GroupBox2.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.GroupBox2.Size = New System.Drawing.Size(88, 85)
+        Me.GroupBox2.TabIndex = 25
+        Me.GroupBox2.TabStop = False
+        Me.GroupBox2.Text = "Draw Colors"
+        '
+        'optColorRainbow
+        '
+        Me.optColorRainbow.AutoSize = True
+        Me.optColorRainbow.Location = New System.Drawing.Point(6, 60)
+        Me.optColorRainbow.Name = "optColorRainbow"
+        Me.optColorRainbow.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.optColorRainbow.Size = New System.Drawing.Size(67, 17)
+        Me.optColorRainbow.TabIndex = 13
+        Me.optColorRainbow.Text = "Rainbow"
+        Me.optColorRainbow.UseVisualStyleBackColor = True
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1179, 621)
+        Me.Controls.Add(Me.GroupBox2)
+        Me.Controls.Add(Me.GroupBox1)
         Me.Controls.Add(Me.nudBacklashZ)
         Me.Controls.Add(Me.nudBacklashY)
         Me.Controls.Add(Me.nudBacklashX)
@@ -466,11 +531,7 @@ Partial Class frmMain
         Me.Controls.Add(Me.Label6)
         Me.Controls.Add(Me.Label5)
         Me.Controls.Add(Me.Label4)
-        Me.Controls.Add(Me.optDrawFromTo)
-        Me.Controls.Add(Me.optDrawOne)
-        Me.Controls.Add(Me.optDrawAll)
         Me.Controls.Add(Me.btnDebug)
-        Me.Controls.Add(Me.Label3)
         Me.Controls.Add(Me.Label2)
         Me.Controls.Add(Me.hsbCameraZoom)
         Me.Controls.Add(Me.hsbCameraZ)
@@ -491,6 +552,10 @@ Partial Class frmMain
         CType(Me.nudBacklashX, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.nudBacklashY, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.nudBacklashZ, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.GroupBox1.ResumeLayout(False)
+        Me.GroupBox1.PerformLayout()
+        Me.GroupBox2.ResumeLayout(False)
+        Me.GroupBox2.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -513,7 +578,6 @@ Partial Class frmMain
     Friend WithEvents btnDebug As Button
     Friend WithEvents optDrawAll As RadioButton
     Friend WithEvents optDrawOne As RadioButton
-    Friend WithEvents Label3 As Label
     Friend WithEvents optDrawFromTo As RadioButton
     Friend WithEvents Label4 As Label
     Friend WithEvents Label5 As Label
@@ -535,4 +599,9 @@ Partial Class frmMain
     Friend WithEvents nudBacklashX As NumericUpDown
     Friend WithEvents nudBacklashY As NumericUpDown
     Friend WithEvents nudBacklashZ As NumericUpDown
+    Friend WithEvents optColorSolid As RadioButton
+    Friend WithEvents optColorLayers As RadioButton
+    Friend WithEvents GroupBox1 As GroupBox
+    Friend WithEvents GroupBox2 As GroupBox
+    Friend WithEvents optColorRainbow As RadioButton
 End Class
