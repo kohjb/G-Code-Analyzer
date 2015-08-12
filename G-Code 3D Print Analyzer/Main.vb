@@ -80,7 +80,7 @@ Public Class frmMain
         'DrawPyramid()
         DrawAxes()
         If blngCodeLoaded Then
-            DrawgCode()
+            DrawgCode(e)
         End If
 
         'Sync and Swap
@@ -94,10 +94,10 @@ Public Class frmMain
         Dim w As Integer = glc3DView.Width
         Dim h As Integer = glc3DView.Height
         CameraPos = New Vector3(150, 30, 25)
-        TargetPos = New Vector3(0, 30, 25)
+        TargetPos = New Vector3(50, 80, 0)
         CameraUp = New Vector3(0, 0, 1)
 
-        Dim perspective As Matrix4 = Matrix4.CreatePerspectiveFieldOfView(90 * Math.PI / 180, w / h, 1, 10000) 'Setup Perspective (fov, aspect ratio, zNear, zFar)
+        Dim perspective As Matrix4 = Matrix4.CreatePerspectiveFieldOfView(10 * Math.PI / 180, w / h, 1, 10000) 'Setup Perspective (fov, aspect ratio, zNear, zFar)
         GL.MatrixMode(MatrixMode.Projection)
         GL.LoadIdentity()
         GL.LoadMatrix(perspective)
@@ -114,14 +114,15 @@ Public Class frmMain
         GL.Viewport(0, 0, w, h)  ' Viewport (bottom left, top right)
     End Sub
 
-    Private Sub DrawgCode()
+    Private Sub DrawgCode(e As PaintEventArgs)
         'Read the gCode and draw lines as needed
 
         Dim curX, curY, curZ, curE As Single
         Dim lastX, lastY, lastZ, lastE As Single
         Dim blnAbsoluteMode As Boolean = True
         Dim nstart, nend As Integer
-        Dim zcolor As Color
+        Dim zcolor, zcolor2 As Color
+        'Dim p As Pen
 
         If optDrawAll.Checked Then
             nend = mygLines
@@ -139,16 +140,21 @@ Public Class frmMain
             'How to show screen update so that it doesn't wait too long?
 
             With mygCode(i)
-                Debug.Write(.Token & " : " & .Params)
+                'Debug.Write(.Token & " : " & .Params)
                 Select Case .Token
                     Case "G1"   'Move X, Y, Z, E
                         If .X = -999 Then curX = lastX Else curX = .X
                         If .Y = -999 Then curY = lastY Else curY = .Y
                         If .Z = -999 Then curZ = lastZ Else curZ = .Z
                         If .E = -999 Then curE = lastE Else curE = .E
-                        If .Params.Contains("Z") Then zcolor = Color.FromArgb(RGB(CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd()))))
+                        If .Params.Contains("Z") Then
+                            zcolor = Color.FromArgb(RGB(CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd()))))
+                            zcolor2 = Color.FromArgb(RGB(255, zcolor.G, zcolor.B))
+                        End If
                         If .Params.Contains("E") Then
-                            DrawLine(New Vector3(lastX, lastY, lastZ), New Vector3(curX, curY, curZ), zcolor)
+                            'p.Color = zcolor
+                            'DrawLine(New Vector3(lastX, lastY, lastZ), New Vector3(curX, curY, curZ), zcolor)                            
+                            DrawLine(New Vector3(lastX, lastY, lastZ), New Vector3(curX, curY, curZ), zcolor, zcolor2)
                         End If
                         lastX = curX
                         lastY = curY
@@ -185,21 +191,43 @@ Public Class frmMain
                     Case Else
 
                 End Select
-                Debug.WriteLine(" (" & curX & ", " & curY & ", " & curZ & ") - (" & lastX & ", " & lastY & ", " & lastZ & ")")
+                'Debug.WriteLine(" (" & curX & ", " & curY & ", " & curZ & ") - (" & lastX & ", " & lastY & ", " & lastZ & ")")
 
 
             End With
         Next
     End Sub
 
-    Private Sub DrawLine(Pt1 As Vector3, Pt2 As Vector3, c As Color)
+    Private Sub DrawLine(Pt1 As Vector3, Pt2 As Vector3, c1 As Color, c2 As Color)
         'Draw line
-        Debug.Write(" Line :  (" & Pt1(0) & ", " & Pt1(1) & ", " & Pt1(2) & ") - (" & Pt2(0) & ", " & Pt2(1) & ", " & Pt2(2) & ")")
+        'Debug.Write(" Line :  (" & Pt1(0) & ", " & Pt1(1) & ", " & Pt1(2) & ") - (" & Pt2(0) & ", " & Pt2(1) & ", " & Pt2(2) & ")")
         GL.Begin(BeginMode.Lines)
-        GL.Color3(c)
+        GL.Color3(c1)
         GL.Vertex3(Pt1)
+        GL.Color3(c2)
         GL.Vertex3(Pt2)
         GL.End()
+    End Sub
+
+    Private Sub DrawArrow(Pt1 As Vector3, Pt2 As Vector3, c As Color)
+        'Draw an arrow line from Pt1 to Pt2
+
+        Dim Midpoint, m2, m3 As Vector3
+        Dim Arrowlen As Single
+
+        If Vector3.Equals(Pt1, Pt2) Then Exit Sub
+
+        Midpoint = New Vector3((Pt1.X + Pt2.X) / 2, (Pt1.Y + Pt2.Y) / 2, (Pt1.Z + Pt2.Z) / 2)
+        Arrowlen = (Vector3.Sub(Pt1, Pt2)).Length / 5
+        m2 = Vector3.Cross(Pt1, Pt2).Normalized
+        m2 = Vector3.Multiply(m2, Arrowlen)
+        m2 = Vector3.Add(Midpoint, m2)
+        DrawLine(Pt1, Pt2, c, c)
+        DrawLine(Midpoint, m2, c, c)
+
+        'DrawLine()
+
+
     End Sub
 
     Private Sub DrawAxes()
