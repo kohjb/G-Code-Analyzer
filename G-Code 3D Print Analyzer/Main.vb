@@ -1,4 +1,6 @@
-﻿Imports System.Text
+﻿'KJB 12 Aug 2015 Rev 1.1
+
+Imports System.Text
 Imports System.IO
 Imports OpenTK
 Imports OpenTK.Graphics
@@ -33,6 +35,13 @@ Public Class frmMain
     Dim TgtXMin, TgtXMax, TgtYMin, TgtYMax, TgtZMin, TgtZMax As Single
     Dim CameraUp As Vector3
 
+    'Backlash Params 
+    Dim BacklashXmin, BacklashXmax, BacklashYmin, BacklashYMax, BacklashZMin, BacklashZMax, BacklashEMin, BacklashEMax As Single
+    Dim curX, curY, curZ, curE As Single        'These are the logical positions (numbers in the computer - where the computer thinks it wants to go to...)
+    Dim lastX, lastY, lastZ, lastE As Single    'These are the logical position of the previous position (where the computer thinks it was at)
+    Dim PhysX, PhysY, PhysZ, PhysE As Single    'These are the physical positions (where the physical head should go)
+    Dim PrevX, PrevY, PrevZ, PrevE As Single    'These are the physical position of the previous position (where the head actually is)
+
     Private Sub btnLoad_Click(sender As Object, e As EventArgs) Handles btnLoad.Click
         Dim tmpcolor As Color
 
@@ -46,6 +55,8 @@ Public Class frmMain
         If ofdgCodeFile.ShowDialog() = System.Windows.Forms.DialogResult.OK Then
             Try
                 'Read file to Textbox
+                lblPrompt.Text = "Loading file : " & ofdgCodeFile.FileName & " ......"
+                Application.DoEvents()
                 rtbSource.LoadFile(ofdgCodeFile.FileName, RichTextBoxStreamType.PlainText)
 
             Catch Ex As Exception
@@ -59,16 +70,24 @@ Public Class frmMain
             btnInterpret.Enabled = True
             chbSource.Enabled = True
             blngCodeLoaded = True
-            lblPrompt.Text = "Loading file : " & ofdgCodeFile.FileName & " ......"
             tmpcolor = lblPrompt.ForeColor
             lblPrompt.ForeColor = Color.Red
+            lblPrompt.Text = "Interpreting file : " & ofdgCodeFile.FileName & "."
             Application.DoEvents()
             InterpretCode()
             lblPrompt.ForeColor = tmpcolor
-            lblPrompt.Text = "Loaded file : " & ofdgCodeFile.FileName & "."
+            lblPrompt.Text = "Loaded file : " & ofdgCodeFile.FileName & ". " & mygLayers & " Layers."
             glc3DView.Invalidate()
             'DrawgCode()        
         End If
+    End Sub
+
+    Private Sub optColorSolid_CheckedChanged(sender As Object, e As EventArgs) Handles optColorSolid.CheckedChanged, optColorLayers.CheckedChanged, optColorRainbow.CheckedChanged
+        glc3DView.Invalidate()
+    End Sub
+
+    Private Sub optDrawAll_CheckedChanged(sender As Object, e As EventArgs) Handles optDrawAll.CheckedChanged, optDrawFromTo.CheckedChanged, optDrawOne.CheckedChanged
+        glc3DView.Invalidate()
     End Sub
 
     Private Sub glc3DView_Load(sender As Object, e As EventArgs) Handles glc3DView.Load
@@ -133,8 +152,6 @@ Public Class frmMain
         Dim newline, strToken() As String
 
         rtbInterpreted.Clear()
-        mygLayers = 0
-        TgtXMin = 150 : TgtXMax = 0 : TgtYMin = 150 : TgtYMax = 0 : TgtZMin = 150 : TgtZMax = 0
 
         For Each myline In txtAll.Split(ControlChars.Lf)
             If linenum > mygCode.Length - 1 Then
@@ -185,30 +202,13 @@ Public Class frmMain
                             End If
                             If Strings.Left(strToken(j), 1) = "X" Then
                                 .X = Strings.Mid(strToken(j), 2)
-                                If Not .Params.Contains("E-") Then
-                                    If .X < TgtXMin Then TgtXMin = .X
-                                    If .X > TgtXMax Then TgtXMax = .X
-                                End If
                             End If
                             If Strings.Left(strToken(j), 1) = "Y" Then
                                 .Y = Strings.Mid(strToken(j), 2)
-                                If Not .Params.Contains("E-") Then
-                                    If .Y < TgtYMin Then TgtYMin = .Y
-                                    If .Y > TgtYMax Then TgtYMax = .Y
-                                End If
                             End If
                             If Strings.Left(strToken(j), 1) = "Z" Then
                                 .Z = Mid(strToken(j), 2)
                                 'Debug.Print(.Z & ", " & strToken(j) & ":" & Mid(strToken(j), 2) & " : " & TgtZMax)
-                                'KJB: Can't get mid correctly? 
-                                If Not .Params.Contains("E-") Then
-                                    If .Z < TgtZMin Then TgtZMin = .Z
-                                    If .Z > TgtZMax Then
-                                        mygLayers += 1   'Increase layer if Z increases
-                                        Debug.Print("Layers = " & mygLayers)
-                                        TgtZMax = .Z
-                                    End If
-                                End If
                             End If
                         Next
                     Case "G92" 'Set current position to coords
@@ -289,20 +289,30 @@ Public Class frmMain
     Private Sub DrawgCode()
         'Read the gCode and draw lines as needed
 
-        Dim curX, curY, curZ, curE As Single
-        Dim lastX, lastY, lastZ, lastE As Single
+        'Dim curX, curY, curZ, curE As Single        'The current (new) logical position (not physical) of the head params
+        'Dim lastX, lastY, lastZ, lastE As Single    'The last (previous) logical position of the head params
         Dim blnAbsoluteMode As Boolean = True
         Dim nstart, nend As Integer
         Dim zcolor1, zcolor2 As Color
+
+        mygLayers = 0
+        TgtXMin = 150 : TgtXMax = 0 : TgtYMin = 150 : TgtYMax = 0 : TgtZMin = 150 : TgtZMax = 0
 
         'Draw all layers, 1 layer, or layer range.
         If optDrawAll.Checked Then
             nend = mygLines
             nstart = 1
         Else
-            If optDrawOne.Checked Then
+            If optDrawOne.Checked Then 'KJB THis one needs fixing! How to determine start and end of Layers when layers have not been determined!
                 nend = mygLine
                 nstart = nend
+                'Find where layer starts
+                For k = nend To 0 Step -1
+                    If mygCode(k).Layer <> mygCode(nend).Layer Then
+                        nstart = k + 1
+                        Exit For
+                    End If
+                Next
             Else
                 nend = mygLine
                 nstart = 1
@@ -363,29 +373,98 @@ Public Class frmMain
                             'zcolor = Color.FromArgb(RGB(CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd()))))
                         End If
 
-                            'Draw only when there is some extrusion
-                            If .Params.Contains("E") And Not .Params.Contains("E-") Then
-                            DrawLine(New Vector3(lastX, lastY, lastZ), New Vector3(curX, curY, curZ), zcolor1, zcolor2)
+                        'Apply backlash effects
+                        '  E.g. for X movement
+                        '  If CurX between BacklashXMin and Xmax, no change to PhysicalX
+                        '  If CurX > BacklashXMax, PhysicalX += CurX - BacklashXMax, BacklashXMax = CurX
+                        '  if CurX < BacklashXMin, PhysicalX -= BacklashXMin - CurX, BacklashXMin = CurX 
+                        If curX > BacklashXmax Then
+                            PhysX += curX - BacklashXmax
+                            BacklashXmax = curX
+                            BacklashXmin = BacklashXmax - nudBacklashX.Value
+                        ElseIf curX < BacklashXmin Then
+                            PhysX -= BacklashXmin - curX
+                            BacklashXmin = curX
+                            BacklashXmax = BacklashXmin + nudBacklashX.Value
                         End If
+                        If curY > BacklashYMax Then
+                            PhysY += curY - BacklashYMax
+                            BacklashYMax = curY
+                            BacklashYmin = BacklashYMax - nudBacklashY.Value
+                        ElseIf curY < BacklashYmin Then
+                            PhysY -= BacklashYmin - curY
+                            BacklashYmin = curY
+                            BacklashYMax = BacklashYmin + nudBacklashY.Value
+                        End If
+                        If curZ > BacklashZMax Then
+                            PhysZ += curZ - BacklashZMax
+                            BacklashZMax = curZ
+                            BacklashZMin = BacklashZMax - nudBacklashZ.Value
+                        ElseIf curZ < BacklashZMin Then
+                            PhysZ -= BacklashZMin - curZ
+                            BacklashZMin = curZ
+                            BacklashZMax = BacklashZMin + nudBacklashZ.Value
+                        End If
+                        If curE > BacklashEMax Then
+                            PhysE += curE - BacklashEMax
+                            BacklashEMax = curE
+                            BacklashEMin = BacklashEMax - 0
+                        ElseIf curE < BacklashEMin Then
+                            PhysE -= BacklashEMin - curE
+                            BacklashEMin = curE
+                            BacklashEMax = BacklashEMin + 0
+                        End If
+                        'Debug.Print("Current: (" & curX & ", " & curY & ", " & curZ & "). PhysX: (" & PhysX & ", " & PhysY & ", " & PhysZ & ").")
+
+                        'Draw only when there is some extrusion
+                        If .Params.Contains("E") And Not .Params.Contains("E-") Then
+                            'DrawLine(New Vector3(lastX, lastY, lastZ), New Vector3(curX, curY, curZ), zcolor1, zcolor2)
+                            DrawLine(New Vector3(PrevX, PrevY, PrevZ), New Vector3(PhysX, PhysY, PhysZ), zcolor1, zcolor2)
+
+                            If curX < TgtXMin Then TgtXMin = curX
+                            If curX > TgtXMax Then TgtXMax = curX
+                            If curY < TgtYMin Then TgtYMin = curY
+                            If curY > TgtYMax Then TgtYMax = curY
+                            If curZ < TgtZMin Then TgtZMin = curZ
+                            If curZ > TgtZMax Then
+                                mygLayers += 1   'Increase layer if Z increases
+                                TgtZMax = curZ
+                            End If
+                        End If
+                        .Layer = mygLayers
+                        'Debug.Print("Layer = " & .Layer)
+
                         lastX = curX
+                        PrevX = PhysX
                         lastY = curY
+                        PrevY = PhysY
                         lastZ = curZ
+                        PrevZ = PhysZ
                         lastE = curE
+                        PrevE = PhysE
                     'Case "G21"   'Set to mm
                     Case "G28"      'Home axes
-                        curX = 0
-                        curY = 0
-                        curZ = 0
-                        lastX = 0
-                        lastY = 0
-                        lastZ = 0
+                        curX = 0 : lastX = 0
+                        BacklashXmin = curX
+                        BacklashXmax = BacklashXmin + nudBacklashX.Value
+                        PhysX = BacklashXmax
+                        curY = 0 : lastY = 0
+                        BacklashYmin = curY
+                        BacklashYMax = BacklashYmin + nudBacklashY.Value
+                        PhysY = BacklashYMax
+                        curZ = 0 : lastZ = 0
+                        BacklashZMin = curZ
+                        BacklashZMax = BacklashZMin + nudBacklashZ.Value
+                        PhysZ = BacklashZMax
+                        PrevX = PhysX
+                        PrevY = PhysY
+                        PrevZ = PhysZ
                     Case "G90"   'Use absolute coordinates mode
                         blnAbsoluteMode = True
                     Case "G91"   'Use relative coordinates mode
                         blnAbsoluteMode = False
                     Case "G92"   'Set current position to coords
-                        'KJB Need to check if value is not set, then should not assign.
-                        If .X = -999 Then curX = lastX Else curX = .X
+                        If .X = -999 Then curX = lastX Else curX = .X       '-999 implies not set
                         If .Y = -999 Then curY = lastY Else curY = .Y
                         If .Z = -999 Then curZ = lastZ Else curZ = .Z
                         If .E = -999 Then curE = lastE Else curE = .E
@@ -483,6 +562,8 @@ Public Class frmMain
     End Sub
 
     Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        'Set up Perspectives
         hsbCameraX.Value = 185 : hsbCameraY.Value = 74 : hsbCameraZ.Value = 63
         CameraPos = New Vector3(hsbCameraX.Value, hsbCameraY.Value, hsbCameraZ.Value)
         hsbCameraZoom.Value = 90
@@ -493,6 +574,9 @@ Public Class frmMain
         TgtXMin = 150 : TgtXMax = 0 : TgtYMin = 150 : TgtYMax = 0 : TgtZMin = 150 : TgtZMax = 0
 
         CameraUp = New Vector3(0, 0, 1)
+
+        'Set up Backlash - e.g. for X backlash, create hysteresis range - movement within hysteresis results in no movement.
+
 
     End Sub
 
