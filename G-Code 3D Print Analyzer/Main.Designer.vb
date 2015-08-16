@@ -338,8 +338,10 @@ Partial Class frmMain
         '
         'hsbTargetZ
         '
+        Me.hsbTargetZ.Enabled = False
         Me.hsbTargetZ.Location = New System.Drawing.Point(968, 242)
         Me.hsbTargetZ.Maximum = 300
+        Me.hsbTargetZ.Minimum = -300
         Me.hsbTargetZ.Name = "hsbTargetZ"
         Me.hsbTargetZ.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.hsbTargetZ.Size = New System.Drawing.Size(184, 22)
@@ -347,8 +349,10 @@ Partial Class frmMain
         '
         'hsbTargetY
         '
+        Me.hsbTargetY.Enabled = False
         Me.hsbTargetY.Location = New System.Drawing.Point(968, 220)
         Me.hsbTargetY.Maximum = 300
+        Me.hsbTargetY.Minimum = -300
         Me.hsbTargetY.Name = "hsbTargetY"
         Me.hsbTargetY.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.hsbTargetY.Size = New System.Drawing.Size(184, 22)
@@ -356,8 +360,10 @@ Partial Class frmMain
         '
         'hsbTargetX
         '
+        Me.hsbTargetX.Enabled = False
         Me.hsbTargetX.Location = New System.Drawing.Point(968, 198)
         Me.hsbTargetX.Maximum = 300
+        Me.hsbTargetX.Minimum = -300
         Me.hsbTargetX.Name = "hsbTargetX"
         Me.hsbTargetX.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.hsbTargetX.Size = New System.Drawing.Size(184, 22)
@@ -402,7 +408,7 @@ Partial Class frmMain
         '
         Me.Label12.AutoSize = True
         Me.Label12.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label12.Location = New System.Drawing.Point(1007, 281)
+        Me.Label12.Location = New System.Drawing.Point(955, 282)
         Me.Label12.Name = "Label12"
         Me.Label12.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.Label12.Size = New System.Drawing.Size(121, 13)
@@ -446,60 +452,60 @@ Partial Class frmMain
         'nudBacklashX
         '
         Me.nudBacklashX.DecimalPlaces = 3
-        Me.nudBacklashX.Increment = New Decimal(New Integer() {10, 0, 0, 196608})
+        Me.nudBacklashX.Increment = New Decimal(New Integer() {1, 0, 0, 65536})
         Me.nudBacklashX.Location = New System.Drawing.Point(975, 298)
         Me.nudBacklashX.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
         Me.nudBacklashX.Name = "nudBacklashX"
         Me.nudBacklashX.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.nudBacklashX.Size = New System.Drawing.Size(177, 20)
+        Me.nudBacklashX.Size = New System.Drawing.Size(75, 20)
         Me.nudBacklashX.TabIndex = 23
         Me.nudBacklashX.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
         'nudBacklashY
         '
         Me.nudBacklashY.DecimalPlaces = 3
-        Me.nudBacklashY.Increment = New Decimal(New Integer() {1, 0, 0, 131072})
+        Me.nudBacklashY.Increment = New Decimal(New Integer() {1, 0, 0, 65536})
         Me.nudBacklashY.Location = New System.Drawing.Point(975, 318)
         Me.nudBacklashY.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
         Me.nudBacklashY.Name = "nudBacklashY"
         Me.nudBacklashY.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.nudBacklashY.Size = New System.Drawing.Size(177, 20)
+        Me.nudBacklashY.Size = New System.Drawing.Size(75, 20)
         Me.nudBacklashY.TabIndex = 23
         Me.nudBacklashY.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
         'nudBacklashZ
         '
         Me.nudBacklashZ.DecimalPlaces = 3
-        Me.nudBacklashZ.Increment = New Decimal(New Integer() {1, 0, 0, 131072})
+        Me.nudBacklashZ.Increment = New Decimal(New Integer() {1, 0, 0, 65536})
         Me.nudBacklashZ.Location = New System.Drawing.Point(975, 338)
         Me.nudBacklashZ.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
         Me.nudBacklashZ.Name = "nudBacklashZ"
         Me.nudBacklashZ.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.nudBacklashZ.Size = New System.Drawing.Size(177, 20)
+        Me.nudBacklashZ.Size = New System.Drawing.Size(75, 20)
         Me.nudBacklashZ.TabIndex = 23
         Me.nudBacklashZ.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
         'optColorSolid
         '
         Me.optColorSolid.AutoSize = True
-        Me.optColorSolid.Checked = True
         Me.optColorSolid.Location = New System.Drawing.Point(6, 19)
         Me.optColorSolid.Name = "optColorSolid"
         Me.optColorSolid.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.optColorSolid.Size = New System.Drawing.Size(48, 17)
         Me.optColorSolid.TabIndex = 13
-        Me.optColorSolid.TabStop = True
         Me.optColorSolid.Text = "Solid"
         Me.optColorSolid.UseVisualStyleBackColor = True
         '
         'optColorLayers
         '
         Me.optColorLayers.AutoSize = True
+        Me.optColorLayers.Checked = True
         Me.optColorLayers.Location = New System.Drawing.Point(6, 38)
         Me.optColorLayers.Name = "optColorLayers"
         Me.optColorLayers.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.optColorLayers.Size = New System.Drawing.Size(56, 17)
         Me.optColorLayers.TabIndex = 13
+        Me.optColorLayers.TabStop = True
         Me.optColorLayers.Text = "Layers"
         Me.optColorLayers.UseVisualStyleBackColor = True
         '

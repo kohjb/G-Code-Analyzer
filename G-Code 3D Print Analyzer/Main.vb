@@ -2,13 +2,14 @@
 
 Imports System.Text
 Imports System.IO
+'Imports System.Windows.Input
 Imports OpenTK
 Imports OpenTK.Graphics
 Imports OpenTK.Graphics.OpenGL
 Imports Microsoft.VisualBasic.Strings
 
 Public Class frmMain
-
+#Region "Dims"
     Dim blnGLLoaded As Boolean = False      'To indicate that the Graphics Screen is loaded.
     Dim blngCodeLoaded As Boolean = False   'To indicate whether gCode file has been loaded
     Public Structure gcLine     'Structure for gCode line. 
@@ -34,6 +35,7 @@ Public Class frmMain
     Dim TargetPos As Vector3
     Dim TgtXMin, TgtXMax, TgtYMin, TgtYMax, TgtZMin, TgtZMax As Single
     Dim CameraUp As Vector3
+    Dim ViewportX, ViewportY As Integer     'The bottom left of the viewport
 
     'Backlash Params 
     Dim BacklashXmin, BacklashXmax, BacklashYmin, BacklashYMax, BacklashZMin, BacklashZMax, BacklashEMin, BacklashEMax As Single
@@ -41,54 +43,7 @@ Public Class frmMain
     Dim lastX, lastY, lastZ, lastE As Single    'These are the logical position of the previous position (where the computer thinks it was at)
     Dim PhysX, PhysY, PhysZ, PhysE As Single    'These are the physical positions (where the physical head should go)
     Dim PrevX, PrevY, PrevZ, PrevE As Single    'These are the physical position of the previous position (where the head actually is)
-
-    Private Sub btnLoad_Click(sender As Object, e As EventArgs) Handles btnLoad.Click
-        Dim tmpcolor As Color
-
-        'ofdgCodeFile.InitialDirectory = "C:\KJB\Draw\3D"
-        ofdgCodeFile.InitialDirectory = "C:\KJB\Draw\3D\Blender\Sherline"
-        ofdgCodeFile.Filter = "gcode files (*.gcode)|*.gcode|All files (*.*)|*.*"
-        ofdgCodeFile.FilterIndex = 1
-        ofdgCodeFile.FileName = ""
-        ofdgCodeFile.RestoreDirectory = True
-
-        If ofdgCodeFile.ShowDialog() = System.Windows.Forms.DialogResult.OK Then
-            Try
-                'Read file to Textbox
-                lblPrompt.Text = "Loading file : " & ofdgCodeFile.FileName & " ......"
-                Application.DoEvents()
-                rtbSource.LoadFile(ofdgCodeFile.FileName, RichTextBoxStreamType.PlainText)
-
-            Catch Ex As Exception
-                MessageBox.Show("Cannot read file from disk. Original error: " & Ex.Message)
-            Finally
-                ' Check this again, since we need to make sure we didn't throw an exception on open. 
-                'If (gCodeStream IsNot Nothing) Then
-                '    gCodeStream.Close()
-                'End If
-            End Try
-            btnInterpret.Enabled = True
-            chbSource.Enabled = True
-            blngCodeLoaded = True
-            tmpcolor = lblPrompt.ForeColor
-            lblPrompt.ForeColor = Color.Red
-            lblPrompt.Text = "Interpreting file : " & ofdgCodeFile.FileName & "."
-            Application.DoEvents()
-            InterpretCode()
-            lblPrompt.ForeColor = tmpcolor
-            lblPrompt.Text = "Loaded file : " & ofdgCodeFile.FileName & ". " & mygLayers & " Layers."
-            glc3DView.Invalidate()
-            'DrawgCode()        
-        End If
-    End Sub
-
-    Private Sub optColorSolid_CheckedChanged(sender As Object, e As EventArgs) Handles optColorSolid.CheckedChanged, optColorLayers.CheckedChanged, optColorRainbow.CheckedChanged
-        glc3DView.Invalidate()
-    End Sub
-
-    Private Sub optDrawAll_CheckedChanged(sender As Object, e As EventArgs) Handles optDrawAll.CheckedChanged, optDrawFromTo.CheckedChanged, optDrawOne.CheckedChanged
-        glc3DView.Invalidate()
-    End Sub
+#End Region
 
     Private Sub glc3DView_Load(sender As Object, e As EventArgs) Handles glc3DView.Load
         'Debug.Print("GL Cleared")
@@ -135,11 +90,11 @@ Public Class frmMain
         GL.MatrixMode(MatrixMode.Modelview) 'Load Camera
         GL.LoadIdentity()
         GL.LoadMatrix(lookat)
-        GL.Viewport(0, 0, w, h) 'Size of window
+        GL.Viewport(ViewportX, ViewportY, w, h) 'Size of window
         GL.Enable(EnableCap.DepthTest) 'Enable correct Z Drawings
         GL.DepthFunc(DepthFunction.Less) 'Enable correct Z Drawings
 
-        GL.Viewport(0, 0, w, h)  ' Viewport (bottom left, top right)
+        'GL.Viewport(ViewportX, ViewportY, w, h)  ' Viewport (bottom left, top right)
     End Sub
 
     Private Sub InterpretCode()
@@ -417,7 +372,7 @@ Public Class frmMain
                         'Debug.Print("Current: (" & curX & ", " & curY & ", " & curZ & "). PhysX: (" & PhysX & ", " & PhysY & ", " & PhysZ & ").")
 
                         'Draw only when there is some extrusion
-                        If .Params.Contains("E") And Not .Params.Contains("E-") Then
+                        If .Params.Contains("E") And Not .Params.Contains("E-") And (.Params.Contains("X") Or .Params.Contains("Y") Or .Params.Contains("Z")) Then
                             'DrawLine(New Vector3(lastX, lastY, lastZ), New Vector3(curX, curY, curZ), zcolor1, zcolor2)
                             DrawLine(New Vector3(PrevX, PrevY, PrevZ), New Vector3(PhysX, PhysY, PhysZ), zcolor1, zcolor2)
 
@@ -574,6 +529,7 @@ Public Class frmMain
         TgtXMin = 150 : TgtXMax = 0 : TgtYMin = 150 : TgtYMax = 0 : TgtZMin = 150 : TgtZMax = 0
 
         CameraUp = New Vector3(0, 0, 1)
+        ViewportX = 0 : ViewportY = 0
 
         'Set up Backlash - e.g. for X backlash, create hysteresis range - movement within hysteresis results in no movement.
 
@@ -582,12 +538,102 @@ Public Class frmMain
 
 #Region "UI Interaction section"
     Public IsDragging As Boolean = False
+    Public IsRightButton As Boolean = False
+    Public isLeftButton As Boolean = False
     Public StartPoint, FirstPoint, LastPoint As Point
+
+    Private Sub btnDebug_Click(sender As Object, e As EventArgs) Handles btnDebug.Click
+        'Rnd(-1)
+        'Randomize(2 + 1)
+        'Debug.Print(Rnd() & ", " & Rnd() & ", " & Rnd())
+
+    End Sub
+
+    Private Sub btnLoad_Click(sender As Object, e As EventArgs) Handles btnLoad.Click
+        Dim tmpcolor As Color
+
+        'ofdgCodeFile.InitialDirectory = "C:\KJB\Draw\3D"
+        ofdgCodeFile.InitialDirectory = "C:\KJB\Draw\3D\Blender\Sherline"
+        ofdgCodeFile.Filter = "gcode files (*.gcode)|*.gcode|All files (*.*)|*.*"
+        ofdgCodeFile.FilterIndex = 1
+        ofdgCodeFile.FileName = ""
+        ofdgCodeFile.RestoreDirectory = True
+
+        If ofdgCodeFile.ShowDialog() = System.Windows.Forms.DialogResult.OK Then
+            Try
+                'Read file to Textbox
+                lblPrompt.Text = "Loading file : " & ofdgCodeFile.FileName & " ......"
+                Application.DoEvents()
+                rtbSource.LoadFile(ofdgCodeFile.FileName, RichTextBoxStreamType.PlainText)
+
+            Catch Ex As Exception
+                MessageBox.Show("Cannot read file from disk. Original error: " & Ex.Message)
+            Finally
+                ' Check this again, since we need to make sure we didn't throw an exception on open. 
+                'If (gCodeStream IsNot Nothing) Then
+                '    gCodeStream.Close()
+                'End If
+            End Try
+            Application.DoEvents()
+            btnInterpret.Enabled = True
+            chbSource.Enabled = True
+            blngCodeLoaded = True
+            tmpcolor = lblPrompt.ForeColor
+            lblPrompt.ForeColor = Color.Red
+            lblPrompt.Text = "Interpreting file : " & ofdgCodeFile.FileName & "."
+            Application.DoEvents()
+            InterpretCode()
+            lblPrompt.ForeColor = tmpcolor
+            lblPrompt.Text = "Loaded file : " & ofdgCodeFile.FileName & ". " & mygLayers & " Layers."
+            glc3DView.Invalidate()
+        End If
+    End Sub
+
+    Private Sub btnOK_Click(sender As Object, e As EventArgs) Handles btnOK.Click
+        Application.Exit()
+    End Sub
+
+    Private Sub btnInterpret_Click(sender As Object, e As EventArgs) Handles btnInterpret.Click
+        InterpretCode()
+        glc3DView.Invalidate()
+    End Sub
+
+    Private Sub nudBacklashX_ValueChanged(sender As Object, e As EventArgs) Handles nudBacklashX.ValueChanged, nudBacklashY.ValueChanged, nudBacklashZ.ValueChanged
+        glc3DView.Invalidate()
+    End Sub
+
+    Private Sub optColorSolid_CheckedChanged(sender As Object, e As EventArgs) Handles optColorSolid.CheckedChanged, optColorLayers.CheckedChanged, optColorRainbow.CheckedChanged
+        glc3DView.Invalidate()
+    End Sub
+
+    Private Sub optDrawAll_CheckedChanged(sender As Object, e As EventArgs) Handles optDrawAll.CheckedChanged, optDrawFromTo.CheckedChanged, optDrawOne.CheckedChanged
+        glc3DView.Invalidate()
+    End Sub
+
+    Private Sub chbAutotgt_CheckedChanged(sender As Object, e As EventArgs) Handles chbAutotgt.CheckedChanged
+        If chbAutotgt.Checked Then
+            hsbTargetX.Enabled = False
+            hsbTargetY.Enabled = False
+            hsbTargetZ.Enabled = False
+            glc3DView.Invalidate()
+        Else
+            hsbTargetX.Enabled = True
+            hsbTargetY.Enabled = True
+            hsbTargetZ.Enabled = True
+        End If
+    End Sub
 
     Private Sub glc3DView_MouseDown(sender As Object, e As MouseEventArgs) Handles glc3DView.MouseDown
         StartPoint = glc3DView.PointToScreen(New Point(e.X, e.Y))
         FirstPoint = StartPoint
         IsDragging = True
+        If e.Button = MouseButtons.Right Then
+            IsRightButton = True
+            isLeftButton = False
+        ElseIf e.Button = MouseButtons.Left Then
+            IsRightButton = False
+            isLeftButton = True
+        End If
     End Sub
 
     Private Sub glc3DView_MouseUp(sender As Object, e As MouseEventArgs) Handles glc3DView.MouseUp
@@ -595,76 +641,164 @@ Public Class frmMain
     End Sub
 
     Private Sub glc3DView_MouseMove(sender As Object, e As MouseEventArgs) Handles glc3DView.MouseMove
+
         If IsDragging Then
-            Dim dTheta, Theta, ThetaZ, dX, dY, dZ, dR, dRz As Single
-            Dim blnDraw As Boolean = False
-            Dim EndPoint As Point = glc3DView.PointToScreen(New Point(e.X, e.Y))
-            Dim Sensitivity As Integer = 1     'The number of degrees to move with each mouse move
-            'Debug.Print(EndPoint.X & ", " & EndPoint.Y)
 
-            'Amount of X movement = amount of degrees of rotation in horizontal plane
-            dTheta = EndPoint.X - StartPoint.X
-            If dTheta <> 0 Then
-                dX = CameraPos.X - TargetPos.X
-                dY = CameraPos.Y - TargetPos.Y
-                dZ = CameraPos.Z - TargetPos.Z
-                dR = Math.Sqrt(dX ^ 2 + dY ^ 2) 'Horizontal radius
-                Theta = Math.Atan2(dX, dY)
+            'Dim blnShiftKeyDown As Boolean
+            'blnShiftKeyDown = ((Control.ModifierKeys And Keys.Shift) = Keys.Shift)
 
-                'Now increase Theta by the new angle
-                Theta += dTheta * Sensitivity * Math.PI / 180
-                dX = dR * Math.Sin(Theta)
-                dY = dR * Math.Cos(Theta)
-                'dZ = dZ    'no change to dZ
+            If IsRightButton Then   'Rotate around target
+                Dim dTheta, Theta, ThetaZ, dX, dY, dZ, dR, dRz As Single
+                Dim blnDraw As Boolean = False
+                Dim EndPoint As Point = glc3DView.PointToScreen(New Point(e.X, e.Y))
+                Dim Sensitivity As Single     'The number of degrees to move with each mouse move
+                'Debug.Print(EndPoint.X & ", " & EndPoint.Y)
 
-                'Now calculate the new Camera position
-                CameraPos.X = dX + TargetPos.X
-                CameraPos.Y = dY + TargetPos.Y
-                CameraPos.Z = dZ + TargetPos.Z
+                'Amount of X movement = amount of degrees of rotation in horizontal plane
+                dTheta = EndPoint.X - StartPoint.X
+                If dTheta <> 0 Then
+                    Sensitivity = 10.0
 
-                blnDraw = True
+                    dX = CameraPos.X - TargetPos.X
+                    dY = CameraPos.Y - TargetPos.Y
+                    dZ = CameraPos.Z - TargetPos.Z
+                    dR = Math.Sqrt(dX ^ 2 + dY ^ 2) 'Horizontal radius
+                    Theta = Math.Atan2(dX, dY) * 180 / Math.PI  'in Degrees
+                    Debug.Print("Radius : " & dR & " Angle : " & Theta & " dTheta : " & dTheta)
+                    Debug.Print("dX,dY : " & dX & ", " & dY & " Old dR = " & dR)
+
+                    'Now increase Theta by the new angle
+                    Theta += dTheta * Sensitivity
+                    dX = dR * Math.Sin(Theta * Math.PI / 180)
+                    dY = dR * Math.Cos(Theta * Math.PI / 180)
+                    'dZ = dZ    'no change to dZ
+
+                    Debug.Print("dX,dY : " & dX & ", " & dY & " New dR = " & Math.Sqrt(dX ^ 2 + dY ^ 2))
+
+                    'Now calculate the new Camera position
+                    CameraPos.X = dX + TargetPos.X
+                    CameraPos.Y = dY + TargetPos.Y
+                    CameraPos.Z = dZ + TargetPos.Z
+
+                    blnDraw = True
+                End If
+
+                'Amount of Y movement = amount of degrees of rotation in vertical plane
+                dTheta = EndPoint.Y - StartPoint.Y
+                If dTheta <> 0 And False Then
+                    Sensitivity = 0.5
+
+                    dX = CameraPos.X - TargetPos.X
+                    dY = CameraPos.Y - TargetPos.Y
+                    dZ = CameraPos.Z - TargetPos.Z
+                    dR = Math.Sqrt(dX ^ 2 + dY ^ 2) 'Horizontal radius
+                    Theta = Math.Atan2(dX, dY)
+
+                    dRz = Math.Sqrt(dR ^ 2 + dZ ^ 2)    '3D radius
+                    ThetaZ = Math.Atan2(dZ, dR)
+
+                    'Now increase Theta by the new angle
+                    ThetaZ += dTheta * Sensitivity * Math.PI / 180
+                    If ThetaZ > 80 * Math.PI / 180 Then ThetaZ = 80 * Math.PI / 180
+                    If ThetaZ < -80 * Math.PI / 180 Then ThetaZ = -80 * Math.PI / 180
+                    dR = dRz * Math.Cos(ThetaZ)
+                    dX = dR * Math.Sin(Theta)
+                    dY = dR * Math.Cos(Theta)
+                    dZ = dRz * Math.Sin(ThetaZ)
+
+                    'Now calculate the new Camera position
+                    CameraPos.X = dX + TargetPos.X
+                    CameraPos.Y = dY + TargetPos.Y
+                    CameraPos.Z = dZ + TargetPos.Z
+
+                    blnDraw = True
+                End If
+
+                If blnDraw Then     'Draw if needed
+                    hsbCameraX.Value = CameraPos.X
+                    hsbCameraY.Value = CameraPos.Y
+                    hsbCameraZ.Value = CameraPos.Z
+                    glc3DView.Invalidate()
+                End If
+
+                StartPoint = EndPoint
+                LastPoint = EndPoint
+
+            ElseIf isLeftButton Then    'Pan camera left right up down
+                Dim dTheta, Theta, ThetaZ, dX, dY, dZ, dR, dRz As Single
+                Dim blnDraw As Boolean = False
+                Dim EndPoint As Point = glc3DView.PointToScreen(New Point(e.X, e.Y))
+                Dim Sensitivity As Single     'The number of degrees to move with each mouse move
+                'Debug.Print(EndPoint.X & ", " & EndPoint.Y)
+
+                chbAutotgt.Checked = False
+
+                'Amount of X movement = amount of degrees of rotation in horizontal plane
+                dTheta = EndPoint.X - StartPoint.X
+                If dTheta <> 0 Then
+                    Sensitivity = 0.2
+                    'Get vector from camera to target
+                    dX = TargetPos.X - CameraPos.X
+                    dY = TargetPos.Y - CameraPos.Y
+                    dZ = TargetPos.Z - CameraPos.Z
+                    dR = Math.Sqrt(dX ^ 2 + dY ^ 2) 'Horizontal radius
+                    Theta = Math.Atan2(dY, dX)      'Angle from Camera to Target
+
+                    'Now increase Theta by the new angle
+                    Theta += dTheta * Sensitivity * Math.PI / 180
+                    dX = dR * Math.Cos(Theta)
+                    dY = dR * Math.Sin(Theta)
+                    'dZ = dZ    'no change to dZ
+
+                    'Now calculate the new Camera position
+                    TargetPos.X = dX + CameraPos.X
+                    TargetPos.Y = dY + CameraPos.Y
+                    TargetPos.Z = dZ + CameraPos.Z
+
+                    blnDraw = True
+                End If
+
+                'Amount of Y movement = amount of degrees of rotation in vertical plane
+                dTheta = EndPoint.Y - StartPoint.Y
+                If dTheta <> 0 Then
+                    Sensitivity = 0.2
+                    dX = TargetPos.X - CameraPos.X
+                    dY = TargetPos.Y - CameraPos.Y
+                    dZ = TargetPos.Z - CameraPos.Z
+                    dR = Math.Sqrt(dX ^ 2 + dY ^ 2) 'Horizontal radius
+                    Theta = Math.Atan2(dY, dX)      'Angle from Camera to Target
+
+                    dRz = Math.Sqrt(dR ^ 2 + dZ ^ 2)    '3D radius
+                    ThetaZ = Math.Atan2(dZ, dR)
+
+                    'Now increase Theta by the new angle
+                    ThetaZ += dTheta * Sensitivity * Math.PI / 180
+                    If ThetaZ > 80 * Math.PI / 180 Then ThetaZ = 80 * Math.PI / 180
+                    If ThetaZ < -80 * Math.PI / 180 Then ThetaZ = -80 * Math.PI / 180
+                    dR = dRz * Math.Cos(ThetaZ)
+                    dX = dR * Math.Cos(Theta)
+                    dY = dR * Math.Sin(Theta)
+                    dZ = dRz * Math.Sin(ThetaZ)
+
+                    'Now calculate the new Camera position
+                    TargetPos.X = dX + CameraPos.X
+                    TargetPos.Y = dY + CameraPos.Y
+                    TargetPos.Z = dZ + CameraPos.Z
+
+                    blnDraw = True
+                End If
+
+                If blnDraw Then     'Draw if needed
+                    hsbTargetX.Value = TargetPos.X
+                    hsbTargetY.Value = TargetPos.Y
+                    hsbTargetZ.Value = TargetPos.Z
+                    glc3DView.Invalidate()
+                End If
+
+                StartPoint = EndPoint
+                LastPoint = EndPoint
             End If
-
-            'Amount of Y movement = amount of degrees of rotation in vertical plane
-            dTheta = EndPoint.Y - StartPoint.Y
-            If dTheta <> 0 Then
-                dX = CameraPos.X - TargetPos.X
-                dY = CameraPos.Y - TargetPos.Y
-                dZ = CameraPos.Z - TargetPos.Z
-                dR = Math.Sqrt(dX ^ 2 + dY ^ 2) 'Horizontal radius
-                Theta = Math.Atan2(dX, dY)
-
-                dRz = Math.Sqrt(dR ^ 2 + dZ ^ 2)    '3D radius
-                ThetaZ = Math.Atan2(dZ, dR)
-
-                'Now increase Theta by the new angle
-                ThetaZ += dTheta * 10 * Math.PI / 180
-                If ThetaZ > 80 * Math.PI / 180 Then ThetaZ = 80 * Math.PI / 180
-                If ThetaZ < -80 * Math.PI / 180 Then ThetaZ = -80 * Math.PI / 180
-                dR = dRz * Math.Cos(ThetaZ)
-                dX = dR * Math.Sin(Theta)
-                dY = dR * Math.Cos(Theta)
-                dZ = dRz * Math.Sin(ThetaZ)
-
-                'Now calculate the new Camera position
-                CameraPos.X = dX + TargetPos.X
-                CameraPos.Y = dY + TargetPos.Y
-                CameraPos.Z = dZ + TargetPos.Z
-
-                blnDraw = True
-            End If
-
-            If blnDraw Then     'Draw if needed
-                hsbCameraX.Value = CameraPos.X
-                hsbCameraY.Value = CameraPos.Y
-                hsbCameraZ.Value = CameraPos.Z
-                SetupViewport()
-                glc3DView.Invalidate()
-            End If
-
-            StartPoint = EndPoint
-            LastPoint = EndPoint
-            End If
+        End If
     End Sub
 
     Private Sub glc3DView_MouseWheel(sender As Object, e As MouseEventArgs) Handles glc3DView.MouseWheel
@@ -684,29 +818,16 @@ Public Class frmMain
             If CameraFOV < 1 Then CameraFOV = 1
         End If
         hsbCameraZoom.Value = CameraFOV
-        SetupViewport()
+        glc3DView.Invalidate()
+    End Sub
+
+    Private Sub hsbCameraX_ValueChanged(sender As Object, e As EventArgs) Handles hsbCameraX.ValueChanged, hsbCameraY.ValueChanged, hsbCameraZ.ValueChanged
+        CameraPos = New Vector3(hsbCameraX.Value, hsbCameraY.Value, hsbCameraZ.Value)
         glc3DView.Invalidate()
     End Sub
 
     Private Sub HScrollBar3_Scroll(sender As Object, e As ScrollEventArgs) Handles hsbTargetX.Scroll, hsbTargetY.Scroll, hsbTargetZ.Scroll
         TargetPos = New Vector3(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value)
-        SetupViewport()
-        glc3DView.Invalidate()
-    End Sub
-
-    Private Sub btnDebug_Click(sender As Object, e As EventArgs) Handles btnDebug.Click
-        'Rnd(-1)
-        'Randomize(2 + 1)
-        'Debug.Print(Rnd() & ", " & Rnd() & ", " & Rnd())
-
-    End Sub
-
-    Private Sub btnOK_Click(sender As Object, e As EventArgs) Handles btnOK.Click
-        Application.Exit()
-    End Sub
-
-    Private Sub btnInterpret_Click(sender As Object, e As EventArgs) Handles btnInterpret.Click
-        InterpretCode()
         glc3DView.Invalidate()
     End Sub
 
@@ -830,6 +951,205 @@ Public Class frmMain
         'glc3DView.SwapBuffers() 'Takes from the 'GL' and puts into control
     End Sub
 
+    Private Sub Test()
+        Dim myMatrix4 As Matrix4
+        Dim myVector4 As Vector4
+        Dim myTransformedVector4 As Vector4
+
+        myTransformedVector4 = Vector4.Transform(myVector4, myMatrix4)
+
+    End Sub
+
+    'http://pastebin.com/3eC3WwRS
+    'Sample in C#
+    'Using System;
+    'Using System.Collections.Generic;
+    'Using System.ComponentModel;
+    'Using System.Data;
+    'Using System.Drawing;
+    'Using System.Linq;
+    'Using System.Text;
+    'Using System.Threading.Tasks;
+    'Using System.Windows.Forms;
+
+    'Using OpenTK;
+    'Using OpenTK.Graphics;
+    'Using OpenTK.Graphics.OpenGL;
+    'Using OpenTK.Platform;
+
+    'Namespace PointCloudForm
+    '{
+    '    Partial Public Class Main_Form :    Form
+    '    {
+    '        int vbo_id;
+    '        int vbo_size;
+    '        Matrix4 modelview, projection;
+    '        uint frameNum;
+
+    '        Const int CloudSize = 48;
+    '        Const float pointSize = 0.01F;
+    '        Const bool HighQuality = True;
+    '        Public Main_Form()
+    '        {
+    '            InitializeComponent();
+    '        }
+
+    '        Private void Main_Form_Load(Object sender, EventArgs e)
+    '        {
+
+    '        }
+
+    '        Private void Main_Form_Resize(Object sender, EventArgs e)
+    '        {
+    '            SetupViewport();
+    '            glControl.Invalidate();
+    '        }
+
+    '        Private void glControl_Load(Object sender, EventArgs e)
+    '        {
+    '            glControl.MouseMove += New MouseEventHandler(glControl_MouseMove);
+    '            glControl.MouseWheel += New MouseEventHandler(glControl_MouseWheel);
+
+    '            GL.ClearColor(Color.DarkSlateGray); // Yey! .NET Colors can be used directly!
+    '            GL.PointSize(pointSize);
+    '            GL.Color3(1f, 1f, 1f); // Points Color
+    '            SetupViewport();
+    '        }
+
+    '        Private void SetupViewport()
+    '        {
+    '            If (this.WindowState == FormWindowState.Minimized) Return;
+    '            glControl.Width = this.Width - 32;
+    '            glControl.Height = this.Height - 80;
+    '            Frame_label.Location = New Point(glControl.Width / 2, glControl.Height + 25);
+    '            GL.MatrixMode(MatrixMode.Projection);
+    '            //GL.LoadIdentity();
+    '            GL.Ortho(0, glControl.Width, 0, glControl.Height, -1, 1); // Bottom-left corner pixel has coordinate (0, 0)
+    '            GL.Viewport(0, 0, glControl.Width, glControl.Height); // Use all of the glControl painting area
+    '            GL.Enable(EnableCap.DepthTest);
+
+    '            // Improve visual quality at the expense of performance
+    '            If (HighQuality)
+    '            {
+    '                int max_size;
+    '                GL.GetInteger(GetPName.PointSizeMax, out max_size);
+    '                GL.Enable(EnableCap.PointSmooth);
+    '            }
+
+    '            // Imagine that the cloud Is a bool[CloudSize, CloudSize, CloudSize] array.
+    '            // This code translates the point cloud into vertex coordinates
+    '            var vertices = New Vector3[CloudSize * CloudSize * CloudSize];
+    '            int index = 0;
+    '            For (int i = 0; i < CloudSize; i++)
+    '                For (int j = 0; j < CloudSize; j++)
+    '                    For (int k = 0; k < CloudSize; k++)
+    '                        If (Math.Sqrt(i * i + j * j + k * k) < CloudSize) // Point cloud shaped Like a sphere
+    '                        {
+    '                            vertices[index++] = New Vector3(
+    '                                -CloudSize / 2 + i,
+    '                                -CloudSize / 2 + j,
+    '                                -CloudSize / 2 + k);
+    '                        }
+
+    '            // Load those vertex coordinates into a VBO
+    '            vbo_size = vertices.Length; // Necessary for rendering later on
+    '            GL.GenBuffers(1, out vbo_id);
+    '            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_id);
+    '            GL.BufferData(BufferTarget.ArrayBuffer,
+    '                          New IntPtr(vertices.Length * BlittableValueType.StrideOf(vertices)),
+    '                          vertices, BufferUsageHint.StaticDraw);
+
+    '            float aspect_ratio = this.Width / (float)this.Height;
+    '            projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspect_ratio, 1, 1024);
+    '            GL.MatrixMode(MatrixMode.Projection);
+    '            GL.LoadMatrix(ref projection);
+    '        }
+
+    '        Private void glControl_Paint(Object sender, PaintEventArgs e)
+    '        {
+    '            GL.Clear(ClearBufferMask.ColorBufferBit |
+    '                     ClearBufferMask.DepthBufferBit |
+    '                     ClearBufferMask.StencilBufferBit);
+
+    '            If (HighQuality)
+    '            {
+    '                GL.PointParameter(PointParameterName.PointDistanceAttenuation,
+    '                    New float[] { 0, 0, (float)Math.Pow(1 / (projection.M11 * Width / 2), 2) });
+    '            }
+
+    '            modelview = Matrix4.LookAt(0f, 20f, -200f + zoomFactor, 0, 0, 0, 0.0f, 1.0f, 0.0f);
+    '            var aspect_ratio = Width / (float)Height;
+    '            projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver6, aspect_ratio, 1, 512);
+
+    '            GL.MatrixMode(MatrixMode.Projection);
+    '            GL.LoadMatrix(ref projection);
+    '            GL.MatrixMode(MatrixMode.Modelview);
+    '            GL.LoadMatrix(ref modelview);
+    '            GL.Rotate(angleY, 1.0f, 0, 0);
+    '            GL.Rotate(angleX, 0, 1.0f, 0);
+    '            //GL.Translate(panX, panY, 0f);
+
+    '            // To draw a VBO
+    '            // 1) Ensure that the VertexArray client state Is enabled.
+    '            // 2) Bind the vertex And element buffer handles.
+    '            // 3) Set up the data pointers (vertex, normal, color) according to your vertex format.
+
+    '            GL.EnableClientState(ArrayCap.VertexArray);
+    '            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_id);
+    '            GL.VertexPointer(3, VertexPointerType.Float, Vector3.SizeInBytes, New IntPtr(0));
+    '            GL.DrawArrays(PrimitiveType.Points, 0, vbo_size);
+
+    '            glControl.SwapBuffers();
+
+    '            Frame_label.Text = "Frame: " + frameNum++;
+    '        }
+
+    '        #Region GLControl. Mouse Event handlers
+    '        Private int _mouseStartX = 0;
+    '        Private int _mouseStartY = 0;
+    '        Private float angleX = 0;
+    '        Private float angleY = 0;
+    '        Private float panX = 0;
+    '        Private float panY = 0;
+
+    '        Private void glControl_MouseMove(Object sender, MouseEventArgs e)
+    '        {
+    '            If (e.Button == MouseButtons.Right)
+    '            {
+    '                angleX += (e.X - _mouseStartX);
+    '                angleY -= (e.Y - _mouseStartY);
+
+    '                this.Cursor = Cursors.Cross;
+
+    '                glControl.Invalidate();
+    '            }
+    '            If (e.Button == MouseButtons.Left)
+    '            {
+    '                panX += (e.X - _mouseStartX);
+    '                panY -= (e.Y - _mouseStartY);
+    '                GL.Viewport((int)panX, (int)panY, glControl.Width, glControl.Height); // Use all of the glControl painting area
+    '                this.Cursor = Cursors.Hand;
+    '                glControl.Invalidate();
+    '            }
+    '            _mouseStartX = e.X;
+    '            _mouseStartY = e.Y;
+    '        }
+
+    '        float zoomFactor;
+    '        Private void glControl_MouseWheel(Object sender, MouseEventArgs e)
+    '        {
+    '            If (e.Delta > 0) zoomFactor += 7F;
+    '            Else zoomFactor -= 7F;
+    '            glControl.Invalidate();
+    '        }
+    '        #endregion        
+
+    '        Private void glControl_MouseUp(Object sender, MouseEventArgs e)
+    '        {
+    '            this.Cursor = Cursors.Default;
+    '        }
+    '    }
+    '}
 
 #End Region
 
