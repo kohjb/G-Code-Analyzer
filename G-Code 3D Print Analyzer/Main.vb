@@ -30,11 +30,11 @@ Public Class frmMain
     Dim mygLayers As Integer         'Total Layers
 
     'Set 3D Params
-    Dim CameraPos As Vector3
+    Dim CameraPos As Vector4
     Dim CameraFOV As Single
-    Dim TargetPos As Vector3
+    Dim TargetPos As Vector4
     Dim TgtXMin, TgtXMax, TgtYMin, TgtYMax, TgtZMin, TgtZMax As Single
-    Dim CameraUp As Vector3
+    Dim CameraUp As Vector4
     Dim ViewportX, ViewportY As Integer     'The bottom left of the viewport
 
     'Backlash Params 
@@ -67,34 +67,6 @@ Public Class frmMain
         GraphicsContext.CurrentContext.VSync = True 'Caps frame rate as to not over run GPU
         glc3DView.SwapBuffers() 'Takes from the 'GL' and puts into control
 
-    End Sub
-
-    Private Sub SetupViewport()
-        'Setup the Graphics Viewport
-        Dim w As Integer = glc3DView.Width
-        Dim h As Integer = glc3DView.Height
-
-        Dim perspective As Matrix4 = Matrix4.CreatePerspectiveFieldOfView(CameraFOV * Math.PI / 180, w / h, 1, 10000) 'Setup Perspective (fov, aspect ratio, zNear, zFar)
-        GL.MatrixMode(MatrixMode.Projection)
-        GL.LoadIdentity()
-        GL.LoadMatrix(perspective)
-        'GL.Ortho(0, w, 0, h, 0, 10) 'Setup Orthographic Projection, bottom left is 0,0 (left, right, bottom, top, zmin, zmax) - zmin is furthest away
-
-        If chbAutotgt.Checked Then
-            hsbTargetX.Value = (TgtXMax + TgtXMin) / 2
-            hsbTargetY.Value = (TgtYMax + TgtYMin) / 2
-            hsbTargetZ.Value = (TgtZMax + TgtZMin) / 2
-            TargetPos = New Vector3(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value)
-        End If
-        Dim lookat As Matrix4 = Matrix4.LookAt(CameraPos, TargetPos, CameraUp) 'Setup camera (eye3d, target3d, Up3d)
-        GL.MatrixMode(MatrixMode.Modelview) 'Load Camera
-        GL.LoadIdentity()
-        GL.LoadMatrix(lookat)
-        GL.Viewport(ViewportX, ViewportY, w, h) 'Size of window
-        GL.Enable(EnableCap.DepthTest) 'Enable correct Z Drawings
-        GL.DepthFunc(DepthFunction.Less) 'Enable correct Z Drawings
-
-        'GL.Viewport(ViewportX, ViewportY, w, h)  ' Viewport (bottom left, top right)
     End Sub
 
     Private Sub InterpretCode()
@@ -240,6 +212,34 @@ Public Class frmMain
                 'Color.FromArgb(RGB(CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd()))))
         End Select
     End Function
+
+    Private Sub SetupViewport()
+        'Setup the Graphics Viewport
+        Dim w As Integer = glc3DView.Width
+        Dim h As Integer = glc3DView.Height
+
+        Dim perspective As Matrix4 = Matrix4.CreatePerspectiveFieldOfView(CameraFOV * Math.PI / 180, w / h, 1, 10000) 'Setup Perspective (fov, aspect ratio, zNear, zFar)
+        GL.MatrixMode(MatrixMode.Projection)
+        GL.LoadIdentity()
+        GL.LoadMatrix(perspective)
+        'GL.Ortho(0, w, 0, h, 0, 10) 'Setup Orthographic Projection, bottom left is 0,0 (left, right, bottom, top, zmin, zmax) - zmin is furthest away
+
+        If chbAutotgt.Checked Then
+            hsbTargetX.Value = (TgtXMax + TgtXMin) / 2
+            hsbTargetY.Value = (TgtYMax + TgtYMin) / 2
+            hsbTargetZ.Value = (TgtZMax + TgtZMin) / 2
+            TargetPos = New Vector4(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value, 0)
+        End If
+        Dim lookat As Matrix4 = Matrix4.LookAt(CameraPos.Xyz, TargetPos.Xyz, CameraUp.Xyz) 'Setup camera (eye3d, target3d, Up3d)
+        GL.MatrixMode(MatrixMode.Modelview) 'Load Camera
+        GL.LoadIdentity()
+        GL.LoadMatrix(lookat)
+        GL.Viewport(ViewportX, ViewportY, w, h) 'Size of window
+        GL.Enable(EnableCap.DepthTest) 'Enable correct Z Drawings
+        GL.DepthFunc(DepthFunction.Less) 'Enable correct Z Drawings
+
+        'GL.Viewport(ViewportX, ViewportY, w, h)  ' Viewport (bottom left, top right)
+    End Sub
 
     Private Sub DrawgCode()
         'Read the gCode and draw lines as needed
@@ -517,23 +517,18 @@ Public Class frmMain
     End Sub
 
     Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-
         'Set up Perspectives
         hsbCameraX.Value = 185 : hsbCameraY.Value = 74 : hsbCameraZ.Value = 63
-        CameraPos = New Vector3(hsbCameraX.Value, hsbCameraY.Value, hsbCameraZ.Value)
+        CameraPos = New Vector4(hsbCameraX.Value, hsbCameraY.Value, hsbCameraZ.Value, 1)
         hsbCameraZoom.Value = 90
         CameraFOV = hsbCameraZoom.Value
 
         hsbTargetX.Value = 144 : hsbTargetY.Value = 74 : hsbTargetZ.Value = 39
-        TargetPos = New Vector3(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value)
+        TargetPos = New Vector4(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value, 0)
         TgtXMin = 150 : TgtXMax = 0 : TgtYMin = 150 : TgtYMax = 0 : TgtZMin = 150 : TgtZMax = 0
 
-        CameraUp = New Vector3(0, 0, 1)
+        CameraUp = New Vector4(0, 0, 1, 1)
         ViewportX = 0 : ViewportY = 0
-
-        'Set up Backlash - e.g. for X backlash, create hysteresis range - movement within hysteresis results in no movement.
-
-
     End Sub
 
 #Region "UI Interaction section"
@@ -651,42 +646,30 @@ Public Class frmMain
                 Dim dTheta, Theta, ThetaZ, dX, dY, dZ, dR, dRz As Single
                 Dim blnDraw As Boolean = False
                 Dim EndPoint As Point = glc3DView.PointToScreen(New Point(e.X, e.Y))
-                Dim Sensitivity As Single     'The number of degrees to move with each mouse move
+                Dim Sensitivity As Integer     'The number of degrees to move with each mouse move
                 'Debug.Print(EndPoint.X & ", " & EndPoint.Y)
 
                 'Amount of X movement = amount of degrees of rotation in horizontal plane
                 dTheta = EndPoint.X - StartPoint.X
                 If dTheta <> 0 Then
-                    Sensitivity = 10.0
-
-                    dX = CameraPos.X - TargetPos.X
-                    dY = CameraPos.Y - TargetPos.Y
-                    dZ = CameraPos.Z - TargetPos.Z
-                    dR = Math.Sqrt(dX ^ 2 + dY ^ 2) 'Horizontal radius
-                    Theta = Math.Atan2(dX, dY) * 180 / Math.PI  'in Degrees
-                    Debug.Print("Radius : " & dR & " Angle : " & Theta & " dTheta : " & dTheta)
-                    Debug.Print("dX,dY : " & dX & ", " & dY & " Old dR = " & dR)
-
-                    'Now increase Theta by the new angle
-                    Theta += dTheta * Sensitivity
-                    dX = dR * Math.Sin(Theta * Math.PI / 180)
-                    dY = dR * Math.Cos(Theta * Math.PI / 180)
-                    'dZ = dZ    'no change to dZ
-
-                    Debug.Print("dX,dY : " & dX & ", " & dY & " New dR = " & Math.Sqrt(dX ^ 2 + dY ^ 2))
-
-                    'Now calculate the new Camera position
-                    CameraPos.X = dX + TargetPos.X
-                    CameraPos.Y = dY + TargetPos.Y
-                    CameraPos.Z = dZ + TargetPos.Z
+                    Dim RotateZ, TranslateTgt, TranslateOrg As Matrix4
+                    Sensitivity = 1
+                    dTheta = dTheta * Sensitivity * Math.PI / 180
+                    RotateZ = New Matrix4(Math.Cos(dTheta), Math.Sin(dTheta), 0, 0, -Math.Sin(dTheta), Math.Cos(dTheta), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+                    TranslateTgt = New Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -TargetPos.X, -TargetPos.Y, -TargetPos.Z, 1)
+                    TranslateOrg = New Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, TargetPos.X, TargetPos.Y, TargetPos.Z, 1)
+                    'Translate World to Target as origin, then rotate Camera about Z, then Translate World back to Target.
+                    CameraPos = Vector4.Transform(CameraPos, TranslateTgt)
+                    CameraPos = Vector4.Transform(CameraPos, RotateZ)
+                    CameraPos = Vector4.Transform(CameraPos, TranslateOrg)
 
                     blnDraw = True
                 End If
 
                 'Amount of Y movement = amount of degrees of rotation in vertical plane
                 dTheta = EndPoint.Y - StartPoint.Y
-                If dTheta <> 0 And False Then
-                    Sensitivity = 0.5
+                If dTheta <> 0 Then
+                    Sensitivity = 1
 
                     dX = CameraPos.X - TargetPos.X
                     dY = CameraPos.Y - TargetPos.Y
@@ -715,7 +698,7 @@ Public Class frmMain
                 End If
 
                 If blnDraw Then     'Draw if needed
-                    hsbCameraX.Value = CameraPos.X
+                    hsbCameraX.Value = Math.Max(Math.Min(CameraPos.X, hsbCameraX.Maximum), hsbCameraX.Minimum)
                     hsbCameraY.Value = CameraPos.Y
                     hsbCameraZ.Value = CameraPos.Z
                     glc3DView.Invalidate()
@@ -822,12 +805,11 @@ Public Class frmMain
     End Sub
 
     Private Sub hsbCameraX_ValueChanged(sender As Object, e As EventArgs) Handles hsbCameraX.ValueChanged, hsbCameraY.ValueChanged, hsbCameraZ.ValueChanged
-        CameraPos = New Vector3(hsbCameraX.Value, hsbCameraY.Value, hsbCameraZ.Value)
         glc3DView.Invalidate()
     End Sub
 
     Private Sub HScrollBar3_Scroll(sender As Object, e As ScrollEventArgs) Handles hsbTargetX.Scroll, hsbTargetY.Scroll, hsbTargetZ.Scroll
-        TargetPos = New Vector3(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value)
+        TargetPos = New Vector4(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value, 0)
         glc3DView.Invalidate()
     End Sub
 
