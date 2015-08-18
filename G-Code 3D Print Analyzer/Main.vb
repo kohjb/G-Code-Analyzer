@@ -12,10 +12,13 @@ Public Class frmMain
 #Region "Dims"
     Dim blnGLLoaded As Boolean = False      'To indicate that the Graphics Screen is loaded.
     Dim blngCodeLoaded As Boolean = False   'To indicate whether gCode file has been loaded
+    Dim blnManualMode As Boolean = True     'To indicate that a Human is "touching" controls instead of progammatically
+
     Public Structure gcLine     'Structure for gCode line. 
         Public Text As String   'Line of text
         Public Token As String  'The G-Code Token for the line (eg. G1, M28, etc)
         Public Params As String 'The parameters of the G-Code (e.g. X62 Y74)
+        Public Line As Integer      'The linenumber that this gcode is displayed on in the TextBox.
         Public Layer As Integer     'The Layer that this gCode is on
         Public Color As Color   'Color of the text
         Public Location As Integer  'Location within the RichTextbox
@@ -25,10 +28,12 @@ Public Class frmMain
         Public F As Single           'Speed of print coord
     End Structure
     Public Structure gVectors   'Structure of Line Vectors
-        Public p1, p2 As Vector3    'Start and end point of vector
+        Public p1, p2 As Vector3    'Start and end point of physical vector (with backlash comp)
+        Public l1, l2 As Vector3    'Start and end point of logical vector
         Public c1, c2 As Color      'Start and end colors of vector, corresponding to p1, p2
         Public dia As Single        'Diameter of the vector - to emulate filament thickness
         Public Layer As Integer     'The Layer that this vector is logically printing on
+        Public gLineNum As Integer  'The line number of the gCode that this vector was created from.
     End Structure
 
     Dim mygCode(10) As gcLine     'the Array number is the line. 0 is not used.
@@ -38,8 +43,7 @@ Public Class frmMain
     Dim nstart, nend As Integer             'Start and End Layers of gCode to draw
     'Dim blgCode(10) as gcLine      'Array of backlash compensated gCode
 
-    Dim lvectors(10) As gVectors    'Array of logical vectors - where the gcode thinks it is printing
-    Dim pvectors(10) As gVectors    'Array of physical vectors - where the printer actually prints after backlash effects
+    Dim lvectors(10) As gVectors    'Array of vectors - that constructs the printout
     Dim myVectors As Integer        'Number of line segments/vectors
 
     'Set 3D Params
@@ -65,20 +69,31 @@ Public Class frmMain
 
     Private Sub glc3DView_Paint(sender As Object, e As PaintEventArgs) Handles glc3DView.Paint
         If (Not blnGLLoaded) Then Return
+
+        blnManualMode = False   'Program is doing stuff
+
         'Clear Buffers
         GL.Clear(ClearBufferMask.ColorBufferBit Or ClearBufferMask.DepthBufferBit)  'Clear Color and Depth buffers
         GL.ClearColor(Color.Black)
-        SetupViewport()
 
         DrawAxes()
         If blngCodeLoaded Then
+            If chbSlow.Checked Then
+                glc3DView.SwapBuffers()
+                GL.Clear(ClearBufferMask.ColorBufferBit Or ClearBufferMask.DepthBufferBit)  'Clear Color and Depth buffers
+                GL.ClearColor(Color.Black)
+                glc3DView.SwapBuffers()
+            End If
             DrawVectors()
         End If
+        SetupViewport()
 
         'Sync and Swap
-        GraphicsContext.CurrentContext.VSync = True 'Caps frame rate as to not over run GPU
+        GraphicsContext.CurrentContext.VSync = True 'Caps frame rate as to not over run GPU        
+        'GraphicsContext.SwapInterval
         glc3DView.SwapBuffers() 'Takes from the 'GL' and puts into control
 
+        blnManualMode = True    'Program has stopped doing stuff
     End Sub
 
     Private Sub RawtoInterpreted()
@@ -121,17 +136,23 @@ Public Class frmMain
 
             sbline.Append(newline)
             linenum += 1
-            mygLines = linenum
-            mygLine = mygLines
 
             Application.DoEvents()      'Attend to System events if any
 
         Next
+        mygLines = linenum - 1  'The last populated line
+        mygLine = mygLines
+        hsbFrom.Maximum = mygLines
+        hsbFrom.Value = 1
+        hsbTo.Maximum = mygLines
+        hsbTo.Value = hsbTo.Maximum / 2
+
         rtbInterpreted.Text = sbline.ToString
 
-        'Colorize the lines
-        For i = 1 To mygLines - 1
+        'Now assign the line in the rtb that the gcode appears in - takes care of line wraps, etc. Colorize the lines
+        For i = 1 To mygLines
             With mygCode(i)
+                .Line = rtbInterpreted.GetLineFromCharIndex(.Location)
                 rtbInterpreted.Select(.Location, .Length)
                 rtbInterpreted.SelectionColor = .Color
             End With
@@ -146,7 +167,7 @@ Public Class frmMain
         Dim lastZ As Single = 0             'The last Z height that the gCode commanded.
         Dim strToken() As String
 
-        For i = 1 To mygLines - 1
+        For i = 1 To mygLines
             With mygCode(i)
                 Select Case .Token
                     Case "G1", "G0"   'Move Commands
@@ -178,7 +199,7 @@ Public Class frmMain
                             'This is the requirement for a valid Line Extrusion/3D Print command - not just spitting, recoiling, etc. 
                             If lastZ > currentZ Then
                                 currentlayer += 1
-                                currentZ = .Z
+                                currentZ = lastZ
                             End If
                         End If
                     Case "G92" 'Set current position to coords
@@ -209,6 +230,8 @@ Public Class frmMain
 
         Next
         mygLayers = currentlayer
+        hsbSingleLayer.Maximum = mygLayers
+        hsbSingleLayer.Value = mygLayers
         nend = mygLayers
     End Sub
 
@@ -220,7 +243,7 @@ Public Class frmMain
         BacklashXmin = 0 : BacklashXmax = 0 : BacklashYmin = 0 : BacklashYMax = 0 : BacklashZMin = 0 : BacklashZMax = 0 : BacklashEMin = 0 : BacklashEMax = 0
         myVectors = 0
 
-        For i = 1 To mygLines - 1
+        For i = 1 To mygLines
             With mygCode(i)
                 Select Case .Token
                     Case "G1", "G0"   'Move X, Y, Z, E
@@ -292,18 +315,15 @@ Public Class frmMain
                             myVectors += 1
                             If myVectors > lvectors.Length - 1 Then    'Increase the array if needed
                                 ReDim Preserve lvectors(lvectors.Length + 10)
-                                ReDim Preserve pvectors(pvectors.Length + 10)
                             End If
 
                             With lvectors(myVectors)
-                                .p1 = New Vector3(lastX, lastY, lastZ)
-                                .p2 = New Vector3(curX, curY, curZ)
-                                .Layer = mygCode(i).Layer
-                            End With
-                            With pvectors(myVectors)
+                                .l1 = New Vector3(lastX, lastY, lastZ)
+                                .l2 = New Vector3(curX, curY, curZ)
                                 .p1 = New Vector3(PrevX, PrevY, PrevZ)
                                 .p2 = New Vector3(PhysX, PhysY, PhysZ)
                                 .Layer = mygCode(i).Layer
+                                .gLineNum = i
                             End With
                         End If
 
@@ -363,6 +383,8 @@ Public Class frmMain
     End Sub
 
     Private Sub InterpretCode()
+        blnManualMode = False   'Program is doing stuff
+
         'Interpret the Raw Code
         lblPrompt.ForeColor = Color.Red
         lblPrompt.Text = "Parsing Raw File ..."
@@ -376,6 +398,8 @@ Public Class frmMain
 
         lblPrompt.ForeColor = Color.Blue
         lblPrompt.Text = "Ready."
+
+        blnManualMode = True    'Program has stopped doing stuff
     End Sub
 
     Private Function mygColor(myToken As String) As Color
@@ -437,23 +461,28 @@ Public Class frmMain
         'Setup the Graphics Viewport
         Dim w As Integer = glc3DView.Width
         Dim h As Integer = glc3DView.Height
-
-        Dim perspective As Matrix4 = Matrix4.CreatePerspectiveFieldOfView(CameraFOV * Math.PI / 180, w / h, 1, 10000) 'Setup Perspective (fov, aspect ratio, zNear, zFar)
-        GL.MatrixMode(MatrixMode.Projection)
-        GL.LoadIdentity()
-        GL.LoadMatrix(perspective)
-        'GL.Ortho(0, w, 0, h, 0, 10) 'Setup Orthographic Projection, bottom left is 0,0 (left, right, bottom, top, zmin, zmax) - zmin is furthest away
+        Dim perspective, lookat As Matrix4
 
         If chbAutotgt.Checked Then
             hsbTargetX.Value = (TgtXMax + TgtXMin) / 2
             hsbTargetY.Value = (TgtYMax + TgtYMin) / 2
             hsbTargetZ.Value = (TgtZMax + TgtZMin) / 2
-            TargetPos = New Vector4(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value, 0)
         End If
-        Dim lookat As Matrix4 = Matrix4.LookAt(CameraPos.Xyz, TargetPos.Xyz, CameraUp.Xyz) 'Setup camera (eye3d, target3d, Up3d)
+
+        CameraPos.Xyz = New Vector3(hsbCameraX.Value, hsbCameraY.Value, hsbCameraZ.Value)
+        TargetPos = New Vector4(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value, 0)
+
+        lookat = Matrix4.LookAt(CameraPos.Xyz, TargetPos.Xyz, CameraUp.Xyz) 'Setup camera (eye3d, target3d, Up3d)
         GL.MatrixMode(MatrixMode.Modelview) 'Load Camera
         GL.LoadIdentity()
         GL.LoadMatrix(lookat)
+
+        perspective = Matrix4.CreatePerspectiveFieldOfView(CameraFOV * Math.PI / 180, w / h, 1, 10000) 'Setup Perspective (fov, aspect ratio, zNear, zFar)
+        GL.MatrixMode(MatrixMode.Projection)
+        GL.LoadIdentity()
+        GL.LoadMatrix(perspective)
+        'GL.Ortho(0, w, 0, h, 0, 10) 'Setup Orthographic Projection, bottom left is 0,0 (left, right, bottom, top, zmin, zmax) - zmin is furthest away
+
         GL.Viewport(ViewportX, ViewportY, w, h) 'Size of window
         GL.Enable(EnableCap.DepthTest) 'Enable correct Z Drawings
         GL.DepthFunc(DepthFunction.Less) 'Enable correct Z Drawings
@@ -466,6 +495,7 @@ Public Class frmMain
 
         Dim pt1, pt2 As Vector3
         Dim zcolor1, zcolor2 As Color
+        Dim l As Integer
 
         'lblPrompt.ForeColor = Color.Red
         'lblPrompt.Text = "Drawing ..."
@@ -474,51 +504,64 @@ Public Class frmMain
         TgtXMin = 999 : TgtXMax = -999 : TgtYMin = 999 : TgtYMax = -999 : TgtZMin = 999 : TgtZMax = -999
 
         'Loop through layers
-        For i = nstart To nend      'This is also altered by the option buttons for all, one, or From-To
+        For i = 1 To myVectors      'This is also altered by the option buttons for all, one, or From-To
             'Determine color to draw the layer/lines
-            If optColorRainbow.Checked Then
-                If i Mod 2 = 0 Then
-                    zcolor1 = Color.FromArgb(RGB(0, 255, 0))
-                    zcolor2 = Color.FromArgb(RGB(255, 0, 0))
-                Else
-                    zcolor1 = Color.FromArgb(RGB(0, 0, 255))
-                    zcolor2 = Color.FromArgb(RGB(255, 255, 0))
-                End If
-            ElseIf optColorLayers.Checked Then
-                If i Mod 2 = 0 Then
-                    zcolor1 = Color.FromArgb(RGB(0, 0, 255))
-                    zcolor2 = Color.FromArgb(RGB(0, 0, 255))
-                Else
-                    zcolor1 = Color.FromArgb(RGB(0, 255, 0))
-                    zcolor2 = Color.FromArgb(RGB(0, 255, 0))
-                End If
-            Else
-                zcolor1 = Color.FromArgb(RGB(128, 128, 128))
-                zcolor2 = Color.FromArgb(RGB(128, 128, 128))
+            If optDrawAll.Checked Or optDrawOne.Checked Then
+                l = lvectors(i).Layer
+            ElseIf optDrawFromTo.Checked Then
+                l = lvectors(i).gLineNum
             End If
+            If l >= nstart And l <= nend Then
+                If optColorRainbow.Checked Then
+                    If l Mod 2 = 0 Then
+                        zcolor1 = Color.FromArgb(RGB(0, 255, 0))
+                        zcolor2 = Color.FromArgb(RGB(255, 0, 0))
+                    Else
+                        zcolor1 = Color.FromArgb(RGB(0, 0, 255))
+                        zcolor2 = Color.FromArgb(RGB(255, 255, 0))
+                    End If
+                ElseIf optColorLayers.Checked Then
+                    If l Mod 2 = 0 Then
+                        zcolor1 = Color.FromArgb(RGB(224, 224, 0))
+                        zcolor2 = Color.FromArgb(RGB(224, 224, 0))
+                    Else
+                        zcolor1 = Color.FromArgb(RGB(0, 192, 192))
+                        zcolor2 = Color.FromArgb(RGB(0, 192, 192))
+                    End If
+                Else
+                    zcolor1 = Color.FromArgb(RGB(128, 128, 128))
+                    zcolor2 = Color.FromArgb(RGB(128, 128, 128))
+                End If
 
-            If chbBacklashON.Checked Then
-                pt1 = pvectors(i).p1
-                pt2 = pvectors(i).p2
-            Else
-                pt1 = lvectors(i).p1
-                pt2 = lvectors(i).p2
+                If chbBacklashON.Checked Then
+                    'Set points to physical points
+                    pt1 = lvectors(i).p1
+                    pt2 = lvectors(i).p2
+                Else
+                    'Set to logical points
+                    pt1 = lvectors(i).l1
+                    pt2 = lvectors(i).l2
+                End If
+
+                'zcolor = Color.FromArgb(RGB(CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd()))))
+
+                DrawLine(pt1, pt2, zcolor1, zcolor2)
+                If chbSlow.Checked Then     'Slow down the animation by pausing
+                    'System.Threading.Thread.Sleep(100)
+                    glc3DView.SwapBuffers()
+                    glc3DView.SwapBuffers()
+                End If
+
+                'Get Bounds for Viewport
+                TgtXMin = Math.Min(TgtXMin, Math.Min(pt1.X, pt2.X))
+                TgtXMax = Math.Max(TgtXMax, Math.Max(pt1.X, pt2.X))
+                TgtYMin = Math.Min(TgtYMin, Math.Min(pt1.Y, pt2.Y))
+                TgtYMax = Math.Max(TgtYMax, Math.Max(pt1.Y, pt2.Y))
+                TgtZMin = Math.Min(TgtZMin, Math.Min(pt1.Z, pt2.Z))
+                TgtZMax = Math.Max(TgtZMax, Math.Max(pt1.Z, pt2.Z))
+
+                'Application.DoEvents()      'Attend to System events if any
             End If
-
-            'zcolor = Color.FromArgb(RGB(CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd()))))
-
-            DrawLine(pt1, pt2, zcolor1, zcolor2)
-
-            'Get Bounds for Viewport
-            TgtXMin = Math.Min(TgtXMin, Math.Min(pt1.X, pt2.X))
-            TgtXMax = Math.Max(TgtXMax, Math.Max(pt1.X, pt2.X))
-            TgtYMin = Math.Min(TgtYMin, Math.Min(pt1.Y, pt2.Y))
-            TgtYMax = Math.Max(TgtYMax, Math.Max(pt1.Y, pt2.Y))
-            TgtZMin = Math.Min(TgtZMin, Math.Min(pt1.Z, pt2.Z))
-            TgtZMax = Math.Max(TgtZMax, Math.Max(pt1.Z, pt2.Z))
-
-            'Application.DoEvents()      'Attend to System events if any
-
         Next
         'lblPrompt.ForeColor = Color.Blue
         'lblPrompt.Text = "Ready."
@@ -600,6 +643,7 @@ Public Class frmMain
     End Sub
 
     Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        blnManualMode = False   'Program is doing stuff
         'Set up Perspectives
         hsbCameraX.Value = 185 : hsbCameraY.Value = 74 : hsbCameraZ.Value = 63
         CameraPos = New Vector4(hsbCameraX.Value, hsbCameraY.Value, hsbCameraZ.Value, 1)
@@ -613,7 +657,8 @@ Public Class frmMain
         CameraUp = New Vector4(0, 0, 1, 1)
         ViewportX = 0 : ViewportY = 0
 
-        nstart = 1 : nend = 0       'Reset the start and end drawing layers
+        nstart = 1 : nend = 0   'Reset the start and end drawing layers
+        blnManualMode = True    'Program has stopped doing stuff
     End Sub
 
 #Region "UI Interaction section"
@@ -679,7 +724,19 @@ Public Class frmMain
         glc3DView.Invalidate()
     End Sub
 
+    Private Sub btnResetCam_Click(sender As Object, e As EventArgs) Handles btnResetCam.Click
+        'Reset the Camera position and View
+        hsbCameraX.Value = 185 : hsbCameraY.Value = 74 : hsbCameraZ.Value = 63
+        CameraPos = New Vector4(hsbCameraX.Value, hsbCameraY.Value, hsbCameraZ.Value, 1)
+        hsbCameraZoom.Value = 90
+        CameraFOV = hsbCameraZoom.Value
+        chbAutotgt.Checked = True
+
+        glc3DView.Invalidate()
+    End Sub
+
     Private Sub nudBacklashX_ValueChanged(sender As Object, e As EventArgs) Handles nudBacklashX.ValueChanged, nudBacklashY.ValueChanged, nudBacklashZ.ValueChanged
+        ProcessVectors()
         glc3DView.Invalidate()
     End Sub
 
@@ -689,30 +746,59 @@ Public Class frmMain
 
     Private Sub optDrawAll_CheckedChanged(sender As Object, e As EventArgs) Handles optDrawAll.CheckedChanged
         If optDrawAll.Checked Then
-            nend = mygLines
+            nend = myVectors    'Set start and end to all vectors
             nstart = 1
+            lblPrompt.Text = "Drawing All Layers"
+
+            rtbInterpreted.SelectionLength = 0
+            rtbInterpreted.SelectionStart = 0
+
+            glc3DView.Invalidate()
         End If
-        glc3DView.Invalidate()
     End Sub
 
-    Private Sub optDrawFromTo_CheckedChanged(sender As Object, e As EventArgs) Handles optDrawFromTo.CheckedChanged, optDrawOne.CheckedChanged
-        If optDrawFromTo.Checked Or optDrawOne.Checked Then
-            'Select row of text that is clicked
-            Dim index = rtbInterpreted.GetCharIndexFromPosition(rtbInterpreted.Location)
-            Dim line = rtbInterpreted.GetLineFromCharIndex(index)
-            Dim lineStart = rtbInterpreted.GetFirstCharIndexFromLine(line)
-            Dim lineEnd = rtbInterpreted.GetFirstCharIndexFromLine(line + 1) - 1
-            rtbInterpreted.SelectionStart = lineStart
-            rtbInterpreted.SelectionLength = lineEnd - lineStart
+    Private Sub optDrawOne_CheckedChanged(sender As Object, e As EventArgs) Handles optDrawOne.CheckedChanged
+        If optDrawOne.Checked Then      'Reposition option button based on visibility
+            hsbSingleLayer.Visible = True
+            optDrawFromTo.Top = hsbSingleLayer.Bottom + (optDrawOne.Top - optDrawAll.Bottom)
 
-            Dim strNumber() As String
-            strNumber = Strings.Split(rtbInterpreted.SelectedText, " ", 2)     'Return the Line Number in strNumber(0)
-            nend = strNumber(0)
-            If optDrawFromTo.Checked Then
-                nstart = 1
-            ElseIf optDrawOne.Checked Then
-                nstart = nend
+            hsbSingleLayer_ValueChanged(sender, e)
+
+            'nstart = hsbSingleLayer.Value
+            'nend = nstart
+            'lblPrompt.Text = "Layer = " & nstart
+            'glc3DView.Invalidate()
+        Else
+            hsbSingleLayer.Visible = False
+            optDrawFromTo.Top = optDrawOne.Bottom + (optDrawOne.Top - optDrawAll.Bottom)
+        End If
+    End Sub
+
+    Private Sub optDrawFromTo_CheckedChanged(sender As Object, e As EventArgs) Handles optDrawFromTo.CheckedChanged
+        If optDrawFromTo.Checked Then
+            hsbFrom.Visible = True
+            hsbTo.Visible = True
+            hsbFrom.Top = optDrawFromTo.Bottom + (optDrawOne.Top - optDrawAll.Bottom)
+            hsbTo.Top = hsbFrom.Bottom + (optDrawOne.Top - optDrawAll.Bottom)
+            If blngCodeLoaded Then
+                nend = hsbTo.Value
+                nstart = hsbFrom.Value
+                If blnManualMode Then 'Modify selection in rtbInterpreted if this was manually adjusted.
+                    Dim charStart, charEnd As Integer
+                    blnManualMode = False
+                    charStart = rtbInterpreted.GetFirstCharIndexFromLine(hsbFrom.Value)
+                    charEnd = rtbInterpreted.GetFirstCharIndexFromLine(hsbTo.Value + 1) - 1
+                    rtbInterpreted.SelectionStart = charStart
+                    rtbInterpreted.SelectionLength = charEnd - rtbInterpreted.SelectionStart
+                    rtbInterpreted.Focus()
+                    blnManualMode = True
+                End If
             End If
+            lblPrompt.Text = "Draw lines from : " & nstart & " to " & nend
+            glc3DView.Invalidate()
+        Else
+            hsbFrom.Visible = False
+            hsbTo.Visible = False
         End If
     End Sub
 
@@ -727,6 +813,10 @@ Public Class frmMain
             hsbTargetY.Enabled = True
             hsbTargetZ.Enabled = True
         End If
+    End Sub
+
+    Private Sub chbBacklashON_CheckedChanged(sender As Object, e As EventArgs) Handles chbBacklashON.CheckedChanged
+        glc3DView.Invalidate()
     End Sub
 
     Private Sub glc3DView_MouseDown(sender As Object, e As MouseEventArgs) Handles glc3DView.MouseDown
@@ -930,6 +1020,75 @@ Public Class frmMain
         glc3DView.Invalidate()
     End Sub
 
+    Private Sub hsbSingleLayer_ValueChanged(sender As Object, e As EventArgs) Handles hsbSingleLayer.ValueChanged
+        If optDrawOne.Checked Then
+            nstart = hsbSingleLayer.Value
+            nend = nstart
+            lblPrompt.Text = "Layer = " & nstart
+
+            If blnManualMode Then       'Select the rows in rtbInterpreted
+                blnManualMode = False
+
+                Dim i, lineStart, lineEnd, charStart, charEnd As Integer
+                i = 1
+                While mygCode(i).Layer < nstart
+                    i += 1
+                End While
+                lineStart = mygCode(i).Line
+                While (mygCode(i).Layer = nstart) And i <= mygLines
+                    i += 1
+                End While
+                lineEnd = mygCode(i - 1).Line
+                charStart = rtbInterpreted.GetFirstCharIndexFromLine(lineStart)
+                charEnd = rtbInterpreted.GetFirstCharIndexFromLine(lineEnd + 1) - 1
+                rtbInterpreted.SelectionStart = charStart
+                rtbInterpreted.SelectionLength = charEnd - charStart
+                rtbInterpreted.Focus()
+
+                blnManualMode = True
+            End If
+            glc3DView.Invalidate()
+        End If
+    End Sub
+
+    Private Sub hsbFrom_ValueChanged(sender As Object, e As EventArgs) Handles hsbFrom.ValueChanged
+        If hsbFrom.Value > hsbTo.Value Then hsbTo.Value = hsbFrom.Value
+        If optDrawFromTo.Checked Then
+            Dim charStart, charEnd As Integer
+            nstart = hsbFrom.Value
+            lblPrompt.Text = "Draw lines from : " & nstart & " to " & nend
+            If blnManualMode Then 'Modify selection in rtbInterpreted if this was manually adjusted.
+                blnManualMode = False
+                charStart = rtbInterpreted.GetFirstCharIndexFromLine(hsbFrom.Value)
+                charEnd = rtbInterpreted.GetFirstCharIndexFromLine(hsbTo.Value + 1) - 1
+                rtbInterpreted.SelectionStart = charStart
+                rtbInterpreted.SelectionLength = charEnd - rtbInterpreted.SelectionStart
+                rtbInterpreted.Focus()
+                blnManualMode = True
+            End If
+
+            glc3DView.Invalidate()
+        End If
+    End Sub
+
+    Private Sub hsbTo_ValueChanged(sender As Object, e As EventArgs) Handles hsbTo.ValueChanged
+        If hsbTo.Value < hsbFrom.Value Then hsbFrom.Value = hsbTo.Value
+        If optDrawFromTo.Checked Then
+            Dim charEnd As Integer
+            nend = hsbTo.Value
+            lblPrompt.Text = "Draw lines from : " & nstart & " to " & nend
+            If blnManualMode Then 'Modify selection in rtbInterpreted if this was manually adjusted.
+                blnManualMode = False
+                charEnd = rtbInterpreted.GetFirstCharIndexFromLine(hsbTo.Value + 1) - 1
+                rtbInterpreted.SelectionLength = charEnd - rtbInterpreted.SelectionStart
+                rtbInterpreted.Focus()
+                blnManualMode = True
+            End If
+
+            glc3DView.Invalidate()
+        End If
+    End Sub
+
     Private Sub chbSource_CheckedChanged(sender As Object, e As EventArgs) Handles chbSource.CheckedChanged
         'Toggle the visibility of the Source text of Interpreted text
         If chbSource.Checked Then
@@ -941,25 +1100,46 @@ Public Class frmMain
         End If
     End Sub
 
-    Private Sub rtbInterpreted_MouseClick(sender As Object, e As MouseEventArgs) Handles rtbInterpreted.MouseClick
+    Private Sub rtbInterpreted_MouseUp(sender As Object, e As MouseEventArgs) Handles rtbInterpreted.MouseUp
         'Display help text when a row is clicked
 
         'Select row of text that is clicked
         Dim box = DirectCast(sender, RichTextBox)
-        Dim index = box.GetCharIndexFromPosition(e.Location)
-        Dim line = box.GetLineFromCharIndex(index)
-        Dim lineStart = box.GetFirstCharIndexFromLine(line)
-        Dim lineEnd = box.GetFirstCharIndexFromLine(line + 1) - 1
-        box.SelectionStart = lineStart
-        box.SelectionLength = lineEnd - lineStart
+        'Dim index = box.GetCharIndexFromPosition(e.Location)
+        Dim lineStart As Integer
+        Dim lineEnd As Integer
+        Dim charStart As Integer
+        Dim charEnd As Integer
+
+        blnManualMode = False
+
+        optDrawFromTo.Checked = True        'Turn on Draw From-To Option
+
+        lineStart = box.GetLineFromCharIndex(box.SelectionStart)
+        charStart = box.GetFirstCharIndexFromLine(lineStart)
+
+        If box.SelectionLength = 0 Then
+            lineEnd = lineStart
+        Else
+            lineEnd = box.GetLineFromCharIndex(box.SelectionStart + box.SelectionLength)
+        End If
+        charEnd = box.GetFirstCharIndexFromLine(lineEnd + 1) - 1
+        box.SelectionStart = charStart
+        box.SelectionLength = charEnd - charStart
 
         Dim strNumber() As String
         strNumber = Strings.Split(box.SelectedText, " ", 2)     'Return the Line Number in strNumber(0)
         mygLine = strNumber(0)
+
+        hsbFrom.Value = mygLine
+        hsbTo.Value = lineEnd - lineStart + nstart     'Assume there's no skipped lines? Dangerous
+
         DisplayHelp(mygCode(mygLine).Token)
+        lblPrompt.Text = "Line:" & mygLine & " Layer:" & mygCode(mygLine).Layer & "  -  " & lblPrompt.Text
+
         glc3DView.Invalidate()
 
-
+        blnManualMode = True
     End Sub
 
     Private Sub rtbInterpreted_MouseHover(sender As Object, e As EventArgs) Handles rtbInterpreted.MouseHover

@@ -62,14 +62,22 @@ Partial Class frmMain
         Me.optColorSolid = New System.Windows.Forms.RadioButton()
         Me.optColorLayers = New System.Windows.Forms.RadioButton()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.hsbTo = New System.Windows.Forms.HScrollBar()
+        Me.hsbFrom = New System.Windows.Forms.HScrollBar()
+        Me.hsbSingleLayer = New System.Windows.Forms.HScrollBar()
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.chbSlow = New System.Windows.Forms.CheckBox()
         Me.optColorRainbow = New System.Windows.Forms.RadioButton()
         Me.chbBacklashON = New System.Windows.Forms.CheckBox()
+        Me.GroupBox3 = New System.Windows.Forms.GroupBox()
+        Me.Label3 = New System.Windows.Forms.Label()
+        Me.btnResetCam = New System.Windows.Forms.Button()
         CType(Me.nudBacklashX, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashY, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashZ, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox1.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
+        Me.GroupBox3.SuspendLayout()
         Me.SuspendLayout()
         '
         'ofdgCodeFile
@@ -90,6 +98,7 @@ Partial Class frmMain
         '
         Me.rtbSource.Location = New System.Drawing.Point(15, 47)
         Me.rtbSource.Name = "rtbSource"
+        Me.rtbSource.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.rtbSource.Size = New System.Drawing.Size(255, 511)
         Me.rtbSource.TabIndex = 1
         Me.rtbSource.Text = ""
@@ -140,7 +149,6 @@ Partial Class frmMain
         Me.rtbInterpreted.Size = New System.Drawing.Size(258, 511)
         Me.rtbInterpreted.TabIndex = 6
         Me.rtbInterpreted.Text = ""
-        Me.rtbInterpreted.WordWrap = False
         '
         'chbSource
         '
@@ -425,19 +433,18 @@ Partial Class frmMain
         Me.chbAutotgt.AutoSize = True
         Me.chbAutotgt.Checked = True
         Me.chbAutotgt.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chbAutotgt.Location = New System.Drawing.Point(781, 178)
+        Me.chbAutotgt.Location = New System.Drawing.Point(795, 178)
         Me.chbAutotgt.Name = "chbAutotgt"
         Me.chbAutotgt.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.chbAutotgt.Size = New System.Drawing.Size(82, 17)
+        Me.chbAutotgt.Size = New System.Drawing.Size(68, 17)
         Me.chbAutotgt.TabIndex = 22
-        Me.chbAutotgt.Text = "Auto Target"
+        Me.chbAutotgt.Text = "Auto Aim"
         Me.chbAutotgt.UseVisualStyleBackColor = True
         '
         'Label13
         '
-        Me.Label13.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Label13.AutoSize = True
-        Me.Label13.Location = New System.Drawing.Point(803, 408)
+        Me.Label13.Location = New System.Drawing.Point(24, 46)
         Me.Label13.Name = "Label13"
         Me.Label13.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.Label13.Size = New System.Drawing.Size(14, 13)
@@ -447,9 +454,8 @@ Partial Class frmMain
         '
         'Label14
         '
-        Me.Label14.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Label14.AutoSize = True
-        Me.Label14.Location = New System.Drawing.Point(803, 428)
+        Me.Label14.Location = New System.Drawing.Point(24, 66)
         Me.Label14.Name = "Label14"
         Me.Label14.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.Label14.Size = New System.Drawing.Size(14, 13)
@@ -459,9 +465,8 @@ Partial Class frmMain
         '
         'Label15
         '
-        Me.Label15.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Label15.AutoSize = True
-        Me.Label15.Location = New System.Drawing.Point(803, 450)
+        Me.Label15.Location = New System.Drawing.Point(24, 88)
         Me.Label15.Name = "Label15"
         Me.Label15.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.Label15.Size = New System.Drawing.Size(14, 13)
@@ -471,10 +476,11 @@ Partial Class frmMain
         '
         'nudBacklashX
         '
-        Me.nudBacklashX.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.nudBacklashX.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.nudBacklashX.DecimalPlaces = 3
         Me.nudBacklashX.Increment = New Decimal(New Integer() {1, 0, 0, 65536})
-        Me.nudBacklashX.Location = New System.Drawing.Point(823, 404)
+        Me.nudBacklashX.Location = New System.Drawing.Point(44, 42)
         Me.nudBacklashX.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
         Me.nudBacklashX.Name = "nudBacklashX"
         Me.nudBacklashX.RightToLeft = System.Windows.Forms.RightToLeft.No
@@ -484,10 +490,11 @@ Partial Class frmMain
         '
         'nudBacklashY
         '
-        Me.nudBacklashY.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.nudBacklashY.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.nudBacklashY.DecimalPlaces = 3
         Me.nudBacklashY.Increment = New Decimal(New Integer() {1, 0, 0, 65536})
-        Me.nudBacklashY.Location = New System.Drawing.Point(823, 424)
+        Me.nudBacklashY.Location = New System.Drawing.Point(44, 62)
         Me.nudBacklashY.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
         Me.nudBacklashY.Name = "nudBacklashY"
         Me.nudBacklashY.RightToLeft = System.Windows.Forms.RightToLeft.No
@@ -497,10 +504,11 @@ Partial Class frmMain
         '
         'nudBacklashZ
         '
-        Me.nudBacklashZ.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.nudBacklashZ.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.nudBacklashZ.DecimalPlaces = 3
         Me.nudBacklashZ.Increment = New Decimal(New Integer() {1, 0, 0, 65536})
-        Me.nudBacklashZ.Location = New System.Drawing.Point(823, 444)
+        Me.nudBacklashZ.Location = New System.Drawing.Point(44, 82)
         Me.nudBacklashZ.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
         Me.nudBacklashZ.Name = "nudBacklashZ"
         Me.nudBacklashZ.RightToLeft = System.Windows.Forms.RightToLeft.No
@@ -511,7 +519,7 @@ Partial Class frmMain
         'optColorSolid
         '
         Me.optColorSolid.AutoSize = True
-        Me.optColorSolid.Location = New System.Drawing.Point(6, 19)
+        Me.optColorSolid.Location = New System.Drawing.Point(6, 43)
         Me.optColorSolid.Name = "optColorSolid"
         Me.optColorSolid.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.optColorSolid.Size = New System.Drawing.Size(48, 17)
@@ -523,7 +531,7 @@ Partial Class frmMain
         '
         Me.optColorLayers.AutoSize = True
         Me.optColorLayers.Checked = True
-        Me.optColorLayers.Location = New System.Drawing.Point(6, 38)
+        Me.optColorLayers.Location = New System.Drawing.Point(6, 62)
         Me.optColorLayers.Name = "optColorLayers"
         Me.optColorLayers.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.optColorLayers.Size = New System.Drawing.Size(56, 17)
@@ -535,35 +543,95 @@ Partial Class frmMain
         'GroupBox1
         '
         Me.GroupBox1.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.GroupBox1.Controls.Add(Me.hsbTo)
+        Me.GroupBox1.Controls.Add(Me.hsbFrom)
         Me.GroupBox1.Controls.Add(Me.optDrawFromTo)
         Me.GroupBox1.Controls.Add(Me.optDrawOne)
         Me.GroupBox1.Controls.Add(Me.optDrawAll)
-        Me.GroupBox1.Location = New System.Drawing.Point(785, 472)
+        Me.GroupBox1.Controls.Add(Me.hsbSingleLayer)
+        Me.GroupBox1.Location = New System.Drawing.Point(781, 403)
         Me.GroupBox1.Name = "GroupBox1"
         Me.GroupBox1.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.GroupBox1.Size = New System.Drawing.Size(108, 85)
+        Me.GroupBox1.Size = New System.Drawing.Size(227, 154)
         Me.GroupBox1.TabIndex = 24
         Me.GroupBox1.TabStop = False
-        Me.GroupBox1.Text = "Layers to Draw"
+        Me.GroupBox1.Text = "Layers/Lines to Draw"
+        '
+        'hsbTo
+        '
+        Me.hsbTo.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.hsbTo.LargeChange = 1
+        Me.hsbTo.Location = New System.Drawing.Point(26, 106)
+        Me.hsbTo.Maximum = 1
+        Me.hsbTo.Minimum = 1
+        Me.hsbTo.Name = "hsbTo"
+        Me.hsbTo.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.hsbTo.Size = New System.Drawing.Size(188, 22)
+        Me.hsbTo.TabIndex = 19
+        Me.hsbTo.Value = 1
+        Me.hsbTo.Visible = False
+        '
+        'hsbFrom
+        '
+        Me.hsbFrom.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.hsbFrom.LargeChange = 1
+        Me.hsbFrom.Location = New System.Drawing.Point(25, 84)
+        Me.hsbFrom.Maximum = 1
+        Me.hsbFrom.Minimum = 1
+        Me.hsbFrom.Name = "hsbFrom"
+        Me.hsbFrom.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.hsbFrom.Size = New System.Drawing.Size(188, 22)
+        Me.hsbFrom.TabIndex = 19
+        Me.hsbFrom.Value = 1
+        Me.hsbFrom.Visible = False
+        '
+        'hsbSingleLayer
+        '
+        Me.hsbSingleLayer.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.hsbSingleLayer.LargeChange = 1
+        Me.hsbSingleLayer.Location = New System.Drawing.Point(26, 61)
+        Me.hsbSingleLayer.Maximum = 1
+        Me.hsbSingleLayer.Minimum = 1
+        Me.hsbSingleLayer.Name = "hsbSingleLayer"
+        Me.hsbSingleLayer.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.hsbSingleLayer.Size = New System.Drawing.Size(188, 22)
+        Me.hsbSingleLayer.TabIndex = 18
+        Me.hsbSingleLayer.Value = 1
+        Me.hsbSingleLayer.Visible = False
         '
         'GroupBox2
         '
         Me.GroupBox2.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.GroupBox2.Controls.Add(Me.chbSlow)
         Me.GroupBox2.Controls.Add(Me.optColorRainbow)
         Me.GroupBox2.Controls.Add(Me.optColorLayers)
         Me.GroupBox2.Controls.Add(Me.optColorSolid)
-        Me.GroupBox2.Location = New System.Drawing.Point(907, 472)
+        Me.GroupBox2.Location = New System.Drawing.Point(920, 282)
         Me.GroupBox2.Name = "GroupBox2"
         Me.GroupBox2.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.GroupBox2.Size = New System.Drawing.Size(88, 85)
+        Me.GroupBox2.Size = New System.Drawing.Size(88, 115)
         Me.GroupBox2.TabIndex = 25
         Me.GroupBox2.TabStop = False
         Me.GroupBox2.Text = "Draw Colors"
         '
+        'chbSlow
+        '
+        Me.chbSlow.AutoSize = True
+        Me.chbSlow.Location = New System.Drawing.Point(6, 19)
+        Me.chbSlow.Name = "chbSlow"
+        Me.chbSlow.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.chbSlow.Size = New System.Drawing.Size(49, 17)
+        Me.chbSlow.TabIndex = 27
+        Me.chbSlow.Text = "Slow"
+        Me.chbSlow.UseVisualStyleBackColor = True
+        '
         'optColorRainbow
         '
         Me.optColorRainbow.AutoSize = True
-        Me.optColorRainbow.Location = New System.Drawing.Point(6, 60)
+        Me.optColorRainbow.Location = New System.Drawing.Point(6, 84)
         Me.optColorRainbow.Name = "optColorRainbow"
         Me.optColorRainbow.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.optColorRainbow.Size = New System.Drawing.Size(67, 17)
@@ -573,34 +641,71 @@ Partial Class frmMain
         '
         'chbBacklashON
         '
-        Me.chbBacklashON.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.chbBacklashON.AutoSize = True
         Me.chbBacklashON.Checked = True
         Me.chbBacklashON.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chbBacklashON.Location = New System.Drawing.Point(785, 381)
+        Me.chbBacklashON.Location = New System.Drawing.Point(6, 19)
         Me.chbBacklashON.Name = "chbBacklashON"
         Me.chbBacklashON.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.chbBacklashON.Size = New System.Drawing.Size(121, 17)
+        Me.chbBacklashON.Size = New System.Drawing.Size(99, 17)
         Me.chbBacklashON.TabIndex = 26
-        Me.chbBacklashON.Text = "Backlash Simulation"
+        Me.chbBacklashON.Text = "Simulation ON?"
         Me.chbBacklashON.UseVisualStyleBackColor = True
+        '
+        'GroupBox3
+        '
+        Me.GroupBox3.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.GroupBox3.Controls.Add(Me.chbBacklashON)
+        Me.GroupBox3.Controls.Add(Me.Label13)
+        Me.GroupBox3.Controls.Add(Me.Label14)
+        Me.GroupBox3.Controls.Add(Me.Label15)
+        Me.GroupBox3.Controls.Add(Me.nudBacklashZ)
+        Me.GroupBox3.Controls.Add(Me.nudBacklashX)
+        Me.GroupBox3.Controls.Add(Me.nudBacklashY)
+        Me.GroupBox3.Location = New System.Drawing.Point(781, 282)
+        Me.GroupBox3.Name = "GroupBox3"
+        Me.GroupBox3.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.GroupBox3.Size = New System.Drawing.Size(129, 115)
+        Me.GroupBox3.TabIndex = 27
+        Me.GroupBox3.TabStop = False
+        Me.GroupBox3.Text = "Backlash"
+        '
+        'Label3
+        '
+        Me.Label3.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.Label3.ForeColor = System.Drawing.Color.SlateGray
+        Me.Label3.Location = New System.Drawing.Point(284, 23)
+        Me.Label3.Name = "Label3"
+        Me.Label3.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.Label3.Size = New System.Drawing.Size(354, 23)
+        Me.Label3.TabIndex = 28
+        Me.Label3.Text = "Rt-Click to rotate around Target. Lt-Click to rotate Camera."
+        Me.Label3.TextAlign = System.Drawing.ContentAlignment.BottomLeft
+        '
+        'btnResetCam
+        '
+        Me.btnResetCam.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.btnResetCam.Font = New System.Drawing.Font("Microsoft Sans Serif", 6.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnResetCam.Location = New System.Drawing.Point(781, 50)
+        Me.btnResetCam.Name = "btnResetCam"
+        Me.btnResetCam.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.btnResetCam.Size = New System.Drawing.Size(38, 20)
+        Me.btnResetCam.TabIndex = 29
+        Me.btnResetCam.Text = "Reset"
+        Me.btnResetCam.UseVisualStyleBackColor = True
         '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(1022, 621)
-        Me.Controls.Add(Me.chbBacklashON)
+        Me.Controls.Add(Me.btnResetCam)
+        Me.Controls.Add(Me.Label3)
+        Me.Controls.Add(Me.GroupBox3)
         Me.Controls.Add(Me.GroupBox2)
         Me.Controls.Add(Me.GroupBox1)
-        Me.Controls.Add(Me.nudBacklashZ)
-        Me.Controls.Add(Me.nudBacklashY)
-        Me.Controls.Add(Me.nudBacklashX)
         Me.Controls.Add(Me.chbAutotgt)
-        Me.Controls.Add(Me.Label15)
-        Me.Controls.Add(Me.Label14)
         Me.Controls.Add(Me.Label7)
-        Me.Controls.Add(Me.Label13)
         Me.Controls.Add(Me.Label8)
         Me.Controls.Add(Me.Label9)
         Me.Controls.Add(Me.Label10)
@@ -636,6 +741,8 @@ Partial Class frmMain
         Me.GroupBox1.PerformLayout()
         Me.GroupBox2.ResumeLayout(False)
         Me.GroupBox2.PerformLayout()
+        Me.GroupBox3.ResumeLayout(False)
+        Me.GroupBox3.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -684,4 +791,11 @@ Partial Class frmMain
     Friend WithEvents GroupBox2 As GroupBox
     Friend WithEvents optColorRainbow As RadioButton
     Friend WithEvents chbBacklashON As CheckBox
+    Friend WithEvents hsbSingleLayer As HScrollBar
+    Friend WithEvents GroupBox3 As GroupBox
+    Friend WithEvents hsbTo As HScrollBar
+    Friend WithEvents hsbFrom As HScrollBar
+    Friend WithEvents chbSlow As CheckBox
+    Friend WithEvents Label3 As Label
+    Friend WithEvents btnResetCam As Button
 End Class
