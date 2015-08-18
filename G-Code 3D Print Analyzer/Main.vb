@@ -23,9 +23,11 @@ Public Class frmMain
         Public Color As Color   'Color of the text
         Public Location As Integer  'Location within the RichTextbox
         Public Length As Integer    'Length of this text
-        Public X, Y, Z As Single     'Coords
+        Public X, Y, Z As Single     'Logical Coords
         Public E As Single           'Extrusion coord
         Public F As Single           'Speed of print coord
+        Public BX, BY, BZ As Single  'Backlash-compensated coords
+        Public BE As Single          'Backlash-compensated Extrusion coord
     End Structure
     Public Structure gVectors   'Structure of Line Vectors
         Public p1, p2 As Vector3    'Start and end point of physical vector (with backlash comp)
@@ -85,6 +87,7 @@ Public Class frmMain
                 glc3DView.SwapBuffers()
             End If
             DrawVectors()
+            chbSlow.Checked = False
         End If
         SetupViewport()
 
@@ -273,6 +276,12 @@ Public Class frmMain
                         '  If CurX between BacklashXMin and Xmax, no change to PhysicalX
                         '  If CurX > BacklashXMax, PhysicalX += CurX - BacklashXMax, BacklashXMax = CurX
                         '  if CurX < BacklashXMin, PhysicalX -= BacklashXMin - CurX, BacklashXMin = CurX 
+                        '
+                        'Compensation for backlash
+                        '  If CurX between BacklashXmin and Xmax, Move to CurX + 1 will have no effect in PhysX
+                        '  To move +1 in PhysX, must move CurX to CurX + 1 + (BacklashXMax - CurX)
+                        '  To move -1 in PhysX, must move CurX to CurX - 1 - (CurX - BacklashXMin)
+
                         If curX > BacklashXmax Then
                             PhysX += curX - BacklashXmax
                             BacklashXmax = curX
@@ -308,6 +317,20 @@ Public Class frmMain
                             PhysE -= BacklashEMin - curE
                             BacklashEMin = curE
                             BacklashEMax = BacklashEMin + 0
+                        End If
+
+                        'Assign backlash compensated values
+                        If curX <> PhysX Then
+                            .BX = curX + (curX - PhysX)
+                        End If
+                        If curY <> PhysY Then
+                            .BY = curY + (curY - PhysY)
+                        End If
+                        If curZ <> PhysZ Then
+                            .BZ = curZ + (curZ - PhysZ)
+                        End If
+                        If curE <> PhysE Then
+                            .BE = curE + (curE - PhysE)
                         End If
 
                         'Create Vector only when there is some valid Line Extrusion/3D Print command - not just spitting, recoiling, etc.
@@ -701,18 +724,27 @@ Public Class frmMain
             End Try
             Application.DoEvents()
             btnInterpret.Enabled = True
-            chbSource.Enabled = True
+            optSource.Enabled = True
+            optInterpreted.Enabled = True
+            optCompensated.Enabled = True
+            btnSaveCode.Enabled = True
             blngCodeLoaded = True
             tmpcolor = lblPrompt.ForeColor
             lblPrompt.ForeColor = Color.Red
             lblPrompt.Text = "Interpreting file : " & ofdgCodeFile.FileName & "."
 
             InterpretCode()             'Take the lines of code....
+            optDrawAll_CheckedChanged(sender, e)
 
             lblPrompt.ForeColor = tmpcolor
             lblPrompt.Text = "Loaded file : " & ofdgCodeFile.FileName & ". " & mygLayers & " Layers."
             glc3DView.Invalidate()
         End If
+    End Sub
+
+    Private Sub btnSaveCode_Click(sender As Object, e As EventArgs) Handles btnSaveCode.Click
+        'Save backlash compensated gCode
+
     End Sub
 
     Private Sub btnOK_Click(sender As Object, e As EventArgs) Handles btnOK.Click
@@ -799,6 +831,22 @@ Public Class frmMain
         Else
             hsbFrom.Visible = False
             hsbTo.Visible = False
+        End If
+    End Sub
+
+    Private Sub optSource_CheckedChanged(sender As Object, e As EventArgs) Handles optSource.CheckedChanged, optInterpreted.CheckedChanged, optCompensated.CheckedChanged
+        If optSource.Checked Then
+            rtbSource.Visible = True
+            rtbInterpreted.Visible = False
+            rtbBacklash.Visible = False
+        ElseIf optInterpreted.Checked Then
+            rtbSource.Visible = False
+            rtbInterpreted.Visible = True
+            rtbBacklash.Visible = False
+        Else
+            rtbSource.Visible = False
+            rtbInterpreted.Visible = False
+            rtbBacklash.Visible = True
         End If
     End Sub
 
@@ -1086,17 +1134,6 @@ Public Class frmMain
             End If
 
             glc3DView.Invalidate()
-        End If
-    End Sub
-
-    Private Sub chbSource_CheckedChanged(sender As Object, e As EventArgs) Handles chbSource.CheckedChanged
-        'Toggle the visibility of the Source text of Interpreted text
-        If chbSource.Checked Then
-            rtbSource.Visible = True
-            rtbInterpreted.Visible = False
-        Else
-            rtbSource.Visible = False
-            rtbInterpreted.Visible = True
         End If
     End Sub
 

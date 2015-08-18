@@ -29,7 +29,6 @@ Partial Class frmMain
         Me.btnInterpret = New System.Windows.Forms.Button()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.rtbInterpreted = New System.Windows.Forms.RichTextBox()
-        Me.chbSource = New System.Windows.Forms.CheckBox()
         Me.lblPrompt = New System.Windows.Forms.Label()
         Me.glc3DView = New OpenTK.GLControl()
         Me.hsbCameraX = New System.Windows.Forms.HScrollBar()
@@ -72,12 +71,19 @@ Partial Class frmMain
         Me.GroupBox3 = New System.Windows.Forms.GroupBox()
         Me.Label3 = New System.Windows.Forms.Label()
         Me.btnResetCam = New System.Windows.Forms.Button()
+        Me.btnSaveCode = New System.Windows.Forms.Button()
+        Me.rtbBacklash = New System.Windows.Forms.RichTextBox()
+        Me.GroupBox4 = New System.Windows.Forms.GroupBox()
+        Me.optCompensated = New System.Windows.Forms.RadioButton()
+        Me.optInterpreted = New System.Windows.Forms.RadioButton()
+        Me.optSource = New System.Windows.Forms.RadioButton()
         CType(Me.nudBacklashX, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashY, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashZ, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox1.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
         Me.GroupBox3.SuspendLayout()
+        Me.GroupBox4.SuspendLayout()
         Me.SuspendLayout()
         '
         'ofdgCodeFile
@@ -86,7 +92,8 @@ Partial Class frmMain
         '
         'btnLoad
         '
-        Me.btnLoad.Location = New System.Drawing.Point(12, 12)
+        Me.btnLoad.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.btnLoad.Location = New System.Drawing.Point(652, 574)
         Me.btnLoad.Name = "btnLoad"
         Me.btnLoad.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.btnLoad.Size = New System.Drawing.Size(113, 23)
@@ -150,18 +157,6 @@ Partial Class frmMain
         Me.rtbInterpreted.TabIndex = 6
         Me.rtbInterpreted.Text = ""
         '
-        'chbSource
-        '
-        Me.chbSource.AutoSize = True
-        Me.chbSource.Enabled = False
-        Me.chbSource.Location = New System.Drawing.Point(158, 17)
-        Me.chbSource.Name = "chbSource"
-        Me.chbSource.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.chbSource.Size = New System.Drawing.Size(90, 17)
-        Me.chbSource.TabIndex = 7
-        Me.chbSource.Text = "Show Source"
-        Me.chbSource.UseVisualStyleBackColor = True
-        '
         'lblPrompt
         '
         Me.lblPrompt.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
@@ -169,7 +164,7 @@ Partial Class frmMain
         Me.lblPrompt.Location = New System.Drawing.Point(134, 574)
         Me.lblPrompt.Name = "lblPrompt"
         Me.lblPrompt.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.lblPrompt.Size = New System.Drawing.Size(707, 23)
+        Me.lblPrompt.Size = New System.Drawing.Size(512, 23)
         Me.lblPrompt.TabIndex = 8
         Me.lblPrompt.Text = "Load a file containing G-code to begin."
         Me.lblPrompt.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
@@ -694,11 +689,84 @@ Partial Class frmMain
         Me.btnResetCam.Text = "Reset"
         Me.btnResetCam.UseVisualStyleBackColor = True
         '
+        'btnSaveCode
+        '
+        Me.btnSaveCode.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.btnSaveCode.Enabled = False
+        Me.btnSaveCode.Location = New System.Drawing.Point(781, 574)
+        Me.btnSaveCode.Name = "btnSaveCode"
+        Me.btnSaveCode.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.btnSaveCode.Size = New System.Drawing.Size(113, 23)
+        Me.btnSaveCode.TabIndex = 30
+        Me.btnSaveCode.Text = "Save gb-Code"
+        Me.btnSaveCode.UseVisualStyleBackColor = True
+        '
+        'rtbBacklash
+        '
+        Me.rtbBacklash.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.rtbBacklash.Location = New System.Drawing.Point(12, 46)
+        Me.rtbBacklash.Name = "rtbBacklash"
+        Me.rtbBacklash.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.rtbBacklash.Size = New System.Drawing.Size(258, 511)
+        Me.rtbBacklash.TabIndex = 31
+        Me.rtbBacklash.Text = ""
+        '
+        'GroupBox4
+        '
+        Me.GroupBox4.Controls.Add(Me.optCompensated)
+        Me.GroupBox4.Controls.Add(Me.optInterpreted)
+        Me.GroupBox4.Controls.Add(Me.optSource)
+        Me.GroupBox4.Location = New System.Drawing.Point(15, 3)
+        Me.GroupBox4.Name = "GroupBox4"
+        Me.GroupBox4.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.GroupBox4.Size = New System.Drawing.Size(254, 35)
+        Me.GroupBox4.TabIndex = 32
+        Me.GroupBox4.TabStop = False
+        Me.GroupBox4.Text = "Show"
+        '
+        'optCompensated
+        '
+        Me.optCompensated.AutoSize = True
+        Me.optCompensated.Enabled = False
+        Me.optCompensated.Location = New System.Drawing.Point(158, 12)
+        Me.optCompensated.Name = "optCompensated"
+        Me.optCompensated.Size = New System.Drawing.Size(90, 17)
+        Me.optCompensated.TabIndex = 1
+        Me.optCompensated.Text = "Compensated"
+        Me.optCompensated.UseVisualStyleBackColor = True
+        '
+        'optInterpreted
+        '
+        Me.optInterpreted.AutoSize = True
+        Me.optInterpreted.Checked = True
+        Me.optInterpreted.Enabled = False
+        Me.optInterpreted.Location = New System.Drawing.Point(72, 12)
+        Me.optInterpreted.Name = "optInterpreted"
+        Me.optInterpreted.Size = New System.Drawing.Size(76, 17)
+        Me.optInterpreted.TabIndex = 1
+        Me.optInterpreted.TabStop = True
+        Me.optInterpreted.Text = "Interpreted"
+        Me.optInterpreted.UseVisualStyleBackColor = True
+        '
+        'optSource
+        '
+        Me.optSource.AutoSize = True
+        Me.optSource.Enabled = False
+        Me.optSource.Location = New System.Drawing.Point(7, 12)
+        Me.optSource.Name = "optSource"
+        Me.optSource.Size = New System.Drawing.Size(59, 17)
+        Me.optSource.TabIndex = 0
+        Me.optSource.Text = "Source"
+        Me.optSource.UseVisualStyleBackColor = True
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(1022, 621)
+        Me.Controls.Add(Me.GroupBox4)
+        Me.Controls.Add(Me.btnSaveCode)
         Me.Controls.Add(Me.btnResetCam)
         Me.Controls.Add(Me.Label3)
         Me.Controls.Add(Me.GroupBox3)
@@ -724,13 +792,13 @@ Partial Class frmMain
         Me.Controls.Add(Me.hsbCameraX)
         Me.Controls.Add(Me.glc3DView)
         Me.Controls.Add(Me.lblPrompt)
-        Me.Controls.Add(Me.chbSource)
         Me.Controls.Add(Me.rtbInterpreted)
         Me.Controls.Add(Me.Label1)
         Me.Controls.Add(Me.btnInterpret)
         Me.Controls.Add(Me.btnOK)
         Me.Controls.Add(Me.rtbSource)
         Me.Controls.Add(Me.btnLoad)
+        Me.Controls.Add(Me.rtbBacklash)
         Me.Name = "frmMain"
         Me.RightToLeft = System.Windows.Forms.RightToLeft.Yes
         Me.Text = "G-Code 3D Print Analyzer"
@@ -743,6 +811,8 @@ Partial Class frmMain
         Me.GroupBox2.PerformLayout()
         Me.GroupBox3.ResumeLayout(False)
         Me.GroupBox3.PerformLayout()
+        Me.GroupBox4.ResumeLayout(False)
+        Me.GroupBox4.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -755,7 +825,6 @@ Partial Class frmMain
     Friend WithEvents btnInterpret As Button
     Friend WithEvents Label1 As Label
     Friend WithEvents rtbInterpreted As RichTextBox
-    Friend WithEvents chbSource As CheckBox
     Friend WithEvents lblPrompt As Label
     Friend WithEvents glc3DView As OpenTK.GLControl
     Friend WithEvents hsbCameraX As HScrollBar
@@ -798,4 +867,10 @@ Partial Class frmMain
     Friend WithEvents chbSlow As CheckBox
     Friend WithEvents Label3 As Label
     Friend WithEvents btnResetCam As Button
+    Friend WithEvents btnSaveCode As Button
+    Friend WithEvents rtbBacklash As RichTextBox
+    Friend WithEvents GroupBox4 As GroupBox
+    Friend WithEvents optCompensated As RadioButton
+    Friend WithEvents optInterpreted As RadioButton
+    Friend WithEvents optSource As RadioButton
 End Class
