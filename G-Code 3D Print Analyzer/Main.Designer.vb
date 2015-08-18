@@ -72,11 +72,13 @@ Partial Class frmMain
         Me.Label3 = New System.Windows.Forms.Label()
         Me.btnResetCam = New System.Windows.Forms.Button()
         Me.btnSaveCode = New System.Windows.Forms.Button()
-        Me.rtbBacklash = New System.Windows.Forms.RichTextBox()
+        Me.rtbCompensated = New System.Windows.Forms.RichTextBox()
         Me.GroupBox4 = New System.Windows.Forms.GroupBox()
         Me.optCompensated = New System.Windows.Forms.RadioButton()
         Me.optInterpreted = New System.Windows.Forms.RadioButton()
         Me.optSource = New System.Windows.Forms.RadioButton()
+        Me.btnCompensate = New System.Windows.Forms.Button()
+        Me.sfdgCompensated = New System.Windows.Forms.SaveFileDialog()
         CType(Me.nudBacklashX, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashY, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashZ, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -123,12 +125,12 @@ Partial Class frmMain
         '
         'btnInterpret
         '
-        Me.btnInterpret.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.btnInterpret.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.btnInterpret.Enabled = False
-        Me.btnInterpret.Location = New System.Drawing.Point(15, 574)
+        Me.btnInterpret.Location = New System.Drawing.Point(781, 13)
         Me.btnInterpret.Name = "btnInterpret"
         Me.btnInterpret.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.btnInterpret.Size = New System.Drawing.Size(113, 23)
+        Me.btnInterpret.Size = New System.Drawing.Size(94, 23)
         Me.btnInterpret.TabIndex = 4
         Me.btnInterpret.Text = "Interpret g-Code"
         Me.btnInterpret.UseVisualStyleBackColor = True
@@ -672,9 +674,9 @@ Partial Class frmMain
         Me.Label3.Location = New System.Drawing.Point(284, 23)
         Me.Label3.Name = "Label3"
         Me.Label3.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.Label3.Size = New System.Drawing.Size(354, 23)
+        Me.Label3.Size = New System.Drawing.Size(388, 23)
         Me.Label3.TabIndex = 28
-        Me.Label3.Text = "Rt-Click to rotate around Target. Lt-Click to rotate Camera."
+        Me.Label3.Text = "Rt-Click - rotate around Target, Lt-Click - rotate Camera, Wheel - Zoom"
         Me.Label3.TextAlign = System.Drawing.ContentAlignment.BottomLeft
         '
         'btnResetCam
@@ -701,16 +703,16 @@ Partial Class frmMain
         Me.btnSaveCode.Text = "Save gb-Code"
         Me.btnSaveCode.UseVisualStyleBackColor = True
         '
-        'rtbBacklash
+        'rtbCompensated
         '
-        Me.rtbBacklash.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+        Me.rtbCompensated.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.rtbBacklash.Location = New System.Drawing.Point(12, 46)
-        Me.rtbBacklash.Name = "rtbBacklash"
-        Me.rtbBacklash.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.rtbBacklash.Size = New System.Drawing.Size(258, 511)
-        Me.rtbBacklash.TabIndex = 31
-        Me.rtbBacklash.Text = ""
+        Me.rtbCompensated.Location = New System.Drawing.Point(12, 46)
+        Me.rtbCompensated.Name = "rtbCompensated"
+        Me.rtbCompensated.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.rtbCompensated.Size = New System.Drawing.Size(258, 511)
+        Me.rtbCompensated.TabIndex = 31
+        Me.rtbCompensated.Text = ""
         '
         'GroupBox4
         '
@@ -760,6 +762,18 @@ Partial Class frmMain
         Me.optSource.Text = "Source"
         Me.optSource.UseVisualStyleBackColor = True
         '
+        'btnCompensate
+        '
+        Me.btnCompensate.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.btnCompensate.Enabled = False
+        Me.btnCompensate.Location = New System.Drawing.Point(12, 574)
+        Me.btnCompensate.Name = "btnCompensate"
+        Me.btnCompensate.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.btnCompensate.Size = New System.Drawing.Size(116, 23)
+        Me.btnCompensate.TabIndex = 4
+        Me.btnCompensate.Text = "Compensate Code"
+        Me.btnCompensate.UseVisualStyleBackColor = True
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -794,11 +808,12 @@ Partial Class frmMain
         Me.Controls.Add(Me.lblPrompt)
         Me.Controls.Add(Me.rtbInterpreted)
         Me.Controls.Add(Me.Label1)
+        Me.Controls.Add(Me.btnCompensate)
         Me.Controls.Add(Me.btnInterpret)
         Me.Controls.Add(Me.btnOK)
         Me.Controls.Add(Me.rtbSource)
         Me.Controls.Add(Me.btnLoad)
-        Me.Controls.Add(Me.rtbBacklash)
+        Me.Controls.Add(Me.rtbCompensated)
         Me.Name = "frmMain"
         Me.RightToLeft = System.Windows.Forms.RightToLeft.Yes
         Me.Text = "G-Code 3D Print Analyzer"
@@ -868,9 +883,11 @@ Partial Class frmMain
     Friend WithEvents Label3 As Label
     Friend WithEvents btnResetCam As Button
     Friend WithEvents btnSaveCode As Button
-    Friend WithEvents rtbBacklash As RichTextBox
+    Friend WithEvents rtbCompensated As RichTextBox
     Friend WithEvents GroupBox4 As GroupBox
     Friend WithEvents optCompensated As RadioButton
     Friend WithEvents optInterpreted As RadioButton
     Friend WithEvents optSource As RadioButton
+    Friend WithEvents btnCompensate As Button
+    Friend WithEvents sfdgCompensated As SaveFileDialog
 End Class

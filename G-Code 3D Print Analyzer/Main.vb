@@ -177,28 +177,28 @@ Public Class frmMain
                         'ReDim strToken(10)
                         strToken = .Params.Split(" ")
                         .X = -999 : .Y = -999 : .Z = -999 : .E = -999 : .F = -999   'Set to default NA
+                        .BX = -999 : .BY = -999 : .BZ = -999 : .BE = -999
                         For j = 0 To strToken.Length - 1
-                            If Strings.Left(strToken(j), 1) = ";" Then      'Terminate for/next as soon as a remark is seen.
-                                Exit For
-                            End If
-                            If Strings.Left(strToken(j), 1) = "X" Then
-                                .X = Strings.Mid(strToken(j), 2)
-                            End If
-                            If Strings.Left(strToken(j), 1) = "Y" Then
-                                .Y = Strings.Mid(strToken(j), 2)
-                            End If
-                            If Strings.Left(strToken(j), 1) = "Z" Then
-                                .Z = Mid(strToken(j), 2)
-                                lastZ = .Z
-                            End If
-                            If Strings.Left(strToken(j), 1) = "E" Then
-                                .E = Mid(strToken(j), 2)
-                            End If
-                            If Strings.Left(strToken(j), 1) = "F" Then
-                                .F = Mid(strToken(j), 2)
-                            End If
+                            Select Case Strings.Left(strToken(j), 1)
+                                Case ";"                                    'Terminate for/next as soon as a remark is seen.
+                                    Exit For
+                                Case "X"
+                                    .X = Strings.Mid(strToken(j), 2)
+                                Case "Y"
+                                    .Y = Strings.Mid(strToken(j), 2)
+                                Case "Z"
+                                    .Z = Mid(strToken(j), 2)
+                                    lastZ = .Z
+                                Case "E"
+                                    .E = Mid(strToken(j), 2)
+                                Case "F"
+                                    .F = Mid(strToken(j), 2)
+                                Case ""    'Ignore this
+                                Case Else
+                                    MessageBox.Show("Error token: " & Strings.Left(strToken(j), 1) & " on line " & i)
+                            End Select
                         Next
-                        If .Params.Contains("E") And Not .Params.Contains("E-") And (.Params.Contains("X") Or .Params.Contains("Y") Or .Params.Contains("Z")) Then
+                        If .E >= 0 And (.X <> -999 Or .Y <> -999 Or .Z <> -999) Then
                             'This is the requirement for a valid Line Extrusion/3D Print command - not just spitting, recoiling, etc. 
                             If lastZ > currentZ Then
                                 currentlayer += 1
@@ -209,21 +209,23 @@ Public Class frmMain
                         strToken = .Params.Split(" ")
                         .X = -999 : .Y = -999 : .Z = -999 : .E = -999 : .F = -999   'Set to default NA
                         For j = 0 To strToken.Length - 1
-                            If Strings.Left(strToken(j), 1) = ";" Then      'Terminate for/next as soon as a remark is seen.
-                                Exit For
-                            End If
-                            If Strings.Left(strToken(j), 1) = "X" Then
-                                .X = Strings.Mid(strToken(j), 2)
-                            End If
-                            If Strings.Left(strToken(j), 1) = "Y" Then
-                                .Y = Strings.Mid(strToken(j), 2)
-                            End If
-                            If Strings.Left(strToken(j), 1) = "Z" Then
-                                .Z = Mid(strToken(j), 2)
-                            End If
-                            If Strings.Left(strToken(j), 1) = "E" Then
-                                .E = Mid(strToken(j), 2)
-                            End If
+                            Select Case Strings.Left(strToken(j), 1)
+                                Case ";"                                    'Terminate for/next as soon as a remark is seen.
+                                    Exit For
+                                Case "X"
+                                    .X = Strings.Mid(strToken(j), 2)
+                                Case "Y"
+                                    .Y = Strings.Mid(strToken(j), 2)
+                                Case "Z"
+                                    .Z = Mid(strToken(j), 2)
+                                    lastZ = .Z
+                                Case "E"
+                                    .E = Mid(strToken(j), 2)
+                                Case "F"
+                                    .F = Mid(strToken(j), 2)
+                                Case Else
+                                    MessageBox.Show("Error token: " & Strings.Left(strToken(j), 1))
+                            End Select
                         Next
                 End Select
                 .Layer = currentlayer
@@ -239,6 +241,7 @@ Public Class frmMain
     End Sub
 
     Private Sub ProcessVectors()
+        'Vector drawing and Backlash Compensation
         'Sub to take gCode and build the Logical Line Vectors - what the gCode "thinks" it is printing. 
         'And the Physical Vectors - what the printer actually prints.
 
@@ -334,7 +337,7 @@ Public Class frmMain
                         End If
 
                         'Create Vector only when there is some valid Line Extrusion/3D Print command - not just spitting, recoiling, etc.
-                        If .Params.Contains("E") And Not .Params.Contains("E-") And (.Params.Contains("X") Or .Params.Contains("Y") Or .Params.Contains("Z")) Then
+                        If .E >= 0 And (.X <> -999 Or .Y <> -999 Or .Z <> -999) Then
                             myVectors += 1
                             If myVectors > lvectors.Length - 1 Then    'Increase the array if needed
                                 ReDim Preserve lvectors(lvectors.Length + 10)
@@ -380,14 +383,47 @@ Public Class frmMain
                     Case "G91"   'Use relative coordinates mode
                         blnAbsoluteMode = False
                     Case "G92"   'Set current position to coords
-                        If .X = -999 Then curX = lastX Else curX = .X       '-999 implies not set
-                        If .Y = -999 Then curY = lastY Else curY = .Y
-                        If .Z = -999 Then curZ = lastZ Else curZ = .Z
-                        If .E = -999 Then curE = lastE Else curE = .E
+                        If .X = -999 Then       '-999 implies not set
+                            curX = lastX
+                        Else
+                            BacklashXmax = (BacklashXmax - curX) + .X
+                            BacklashXmin = .X - (curX - BacklashXmin)
+                            curX = .X
+                            PhysX = curX
+                        End If
+                        If .Y = -999 Then
+                            curY = lastY
+                        Else
+                            BacklashYMax = (BacklashYMax - curY) + .Y
+                            BacklashYmin = .Y - (curY - BacklashYmin)
+                            curY = .Y
+                            PhysY = curY
+                        End If
+                        If .Z = -999 Then
+                            curZ = lastZ
+                        Else
+                            BacklashZMax = (BacklashZMax - curZ) + .Z
+                            BacklashZMin = .Z - (curZ - BacklashZMin)
+                            curZ = .Z
+                            PhysZ = curZ
+                        End If
+                        If .E = -999 Then
+                            curE = lastE
+                        Else
+                            BacklashEMax = (BacklashEMax - curE) + .E
+                            BacklashEMin = .E - (curE - BacklashEMin)
+                            curE = .E
+                            PhysE = curE
+                        End If
                         lastX = curX
+                        PrevX = PhysX
                         lastY = curY
+                        PrevY = PhysY
                         lastZ = curZ
-                        lastE = curE                    'Case "M82"   'Use absolute distances for extrusion
+                        PrevZ = PhysZ
+                        lastE = curE
+                        PrevE = PhysE
+                    'Case "M82"   'Use absolute distances for extrusion
                     'Case "M84"  'Disable Motors
                     'Case "M106"     'Fan ON
                     'Case "M107"     'Fan Off
@@ -397,10 +433,13 @@ Public Class frmMain
                     'Case "M190"     'Set and Wait for Bed to reach Temp
                     Case Else
                 End Select
+
+
             End With
 
             Application.DoEvents()      'Attend to System events if any
 
+            'Debug.Print(i & " : " & mygCode(i).Text)
         Next
 
     End Sub
@@ -423,6 +462,72 @@ Public Class frmMain
         lblPrompt.Text = "Ready."
 
         blnManualMode = True    'Program has stopped doing stuff
+    End Sub
+
+    Private Sub CreateCompensated()
+        'Routine to create the Compensated code
+
+        Dim sbline As New StringBuilder
+        Dim strToken() As String
+
+        'Write Backlash-Compensated code to rtbCompensated
+        For i = 1 To mygLines
+            With mygCode(i)
+                Select Case .Token
+                    Case "G1"       'Move X, Y, Z, E
+                        'Process compensation only when there is some valid Line Extrusion/3D Print command - not just spitting, recoiling, etc.
+                        If (.E <> -999 Or .X <> -999 Or .Y <> -999 Or .Z <> -999) Then
+                            sbline.Append("G1 ")
+                            strToken = .Params.Split(" ")           'Split params into individual words
+                            For j = 0 To strToken.Length - 1
+                                Select Case Strings.Left(strToken(j), 1)
+                                    Case ";"                        'Terminate for/next as soon as a remark is seen.
+                                        sbline.Append(strToken(j))
+                                        Exit For
+                                    Case "X"
+                                        If .BX = -999 Then
+                                            sbline.Append(Strings.Left(strToken(j), 1) & .X)
+                                        Else
+                                            sbline.Append(Strings.Left(strToken(j), 1) & .BX)
+                                        End If
+                                    Case "Y"
+                                        If .BY = -999 Then
+                                            sbline.Append(Strings.Left(strToken(j), 1) & .Y)
+                                        Else
+                                            sbline.Append(Strings.Left(strToken(j), 1) & .BY)
+                                        End If
+                                    Case "Z"
+                                        If .BZ = -999 Then
+                                            sbline.Append(Strings.Left(strToken(j), 1) & .Z)
+                                        Else
+                                            sbline.Append(Strings.Left(strToken(j), 1) & .BZ)
+                                        End If
+                                    Case "E"                        'Ignore E Compensation for now
+                                        sbline.Append(Strings.Left(strToken(j), 1) & .E)
+                                    Case "F"                        'No F Compensation 
+                                        sbline.Append(Strings.Left(strToken(j), 1) & .F)
+                                    Case Else
+
+                                End Select
+                                sbline.Append(" ")
+                            Next
+                            sbline.Append(ControlChars.Lf)
+                        Else
+                            sbline.Append(.Text & ControlChars.Lf)
+                        End If
+                    Case ";", "M82", "M84", "M104", "M106", "M109", "M107", "M140", "M190", "G21", "G28", "G90", "G92"
+                        'Non-backlash gcode
+                        sbline.Append(.Text & ControlChars.Lf)
+                    Case Else
+                        Debug.Print(i & " :  " & mygCode(i).Text)
+                End Select
+            End With
+        Next
+
+        'Put Compensated text into rtbCompensated
+        rtbCompensated.Text = sbline.ToString
+        sbline.Clear()
+
     End Sub
 
     Private Function mygColor(myToken As String) As Color
@@ -744,7 +849,32 @@ Public Class frmMain
 
     Private Sub btnSaveCode_Click(sender As Object, e As EventArgs) Handles btnSaveCode.Click
         'Save backlash compensated gCode
+        Dim tmpcolor As Color
 
+        sfdgCompensated.InitialDirectory = ofdgCodeFile.InitialDirectory
+        sfdgCompensated.Filter = ofdgCodeFile.Filter     ' "gcode files (*.gcode)|*.gcode|All files (*.*)|*.*"
+        sfdgCompensated.FilterIndex = 1
+        sfdgCompensated.AddExtension = True
+        sfdgCompensated.FileName = ofdgCodeFile.SafeFileName
+        sfdgCompensated.RestoreDirectory = True
+
+        If sfdgCompensated.ShowDialog() = System.Windows.Forms.DialogResult.OK Then
+            Try
+                'Read file to Textbox
+                lblPrompt.Text = "Saving file : " & sfdgCompensated.FileName & " ......"
+                Application.DoEvents()
+                rtbCompensated.SaveFile(sfdgCompensated.FileName, RichTextBoxStreamType.PlainText)
+            Catch Ex As Exception
+                MessageBox.Show("Cannot save file to disk. Original error: " & Ex.Message)
+            Finally
+                ' Check this again, since we need to make sure we didn't throw an exception on open. 
+                'If (gCodeStream IsNot Nothing) Then
+                '    gCodeStream.Close()
+                'End If
+            End Try
+            Application.DoEvents()
+            lblPrompt.Text = "Saved file : " & sfdgCompensated.FileName
+        End If
     End Sub
 
     Private Sub btnOK_Click(sender As Object, e As EventArgs) Handles btnOK.Click
@@ -754,6 +884,18 @@ Public Class frmMain
     Private Sub btnInterpret_Click(sender As Object, e As EventArgs) Handles btnInterpret.Click
         InterpretCode()
         glc3DView.Invalidate()
+    End Sub
+
+    Private Sub btnCompensate_Click(sender As Object, e As EventArgs) Handles btnCompensate.Click
+        'Read Interpreted Code and create compensated code in rtbCompensated
+        lblPrompt.ForeColor = Color.Red
+        lblPrompt.Text = "Creating Backlash Compensated Code..."
+        Application.DoEvents()
+        CreateCompensated()
+
+        lblPrompt.ForeColor = Color.Blue
+        lblPrompt.Text = "Ready."
+
     End Sub
 
     Private Sub btnResetCam_Click(sender As Object, e As EventArgs) Handles btnResetCam.Click
@@ -768,8 +910,15 @@ Public Class frmMain
     End Sub
 
     Private Sub nudBacklashX_ValueChanged(sender As Object, e As EventArgs) Handles nudBacklashX.ValueChanged, nudBacklashY.ValueChanged, nudBacklashZ.ValueChanged
-        ProcessVectors()
-        glc3DView.Invalidate()
+        If (nudBacklashX.Value <> 0 Or nudBacklashY.Value <> 0 Or nudBacklashZ.Value <> 0) And blnManualMode Then
+            blnManualMode = False
+            ProcessVectors()
+            glc3DView.Invalidate()
+            btnCompensate.Enabled = True
+            blnManualMode = True
+        Else
+            btnCompensate.Enabled = False
+        End If
     End Sub
 
     Private Sub optColorSolid_CheckedChanged(sender As Object, e As EventArgs) Handles optColorSolid.CheckedChanged, optColorLayers.CheckedChanged, optColorRainbow.CheckedChanged
@@ -838,15 +987,15 @@ Public Class frmMain
         If optSource.Checked Then
             rtbSource.Visible = True
             rtbInterpreted.Visible = False
-            rtbBacklash.Visible = False
+            rtbCompensated.Visible = False
         ElseIf optInterpreted.Checked Then
             rtbSource.Visible = False
             rtbInterpreted.Visible = True
-            rtbBacklash.Visible = False
+            rtbCompensated.Visible = False
         Else
             rtbSource.Visible = False
             rtbInterpreted.Visible = False
-            rtbBacklash.Visible = True
+            rtbCompensated.Visible = True
         End If
     End Sub
 
@@ -864,7 +1013,7 @@ Public Class frmMain
     End Sub
 
     Private Sub chbBacklashON_CheckedChanged(sender As Object, e As EventArgs) Handles chbBacklashON.CheckedChanged
-        glc3DView.Invalidate()
+        nudBacklashX_ValueChanged(sender, e)
     End Sub
 
     Private Sub glc3DView_MouseDown(sender As Object, e As MouseEventArgs) Handles glc3DView.MouseDown
