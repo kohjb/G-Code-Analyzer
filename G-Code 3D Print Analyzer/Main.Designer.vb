@@ -574,7 +574,7 @@ Partial Class frmMain
         Me.hsbFrom.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.hsbFrom.LargeChange = 1
-        Me.hsbFrom.Location = New System.Drawing.Point(25, 84)
+        Me.hsbFrom.Location = New System.Drawing.Point(26, 84)
         Me.hsbFrom.Maximum = 1
         Me.hsbFrom.Minimum = 1
         Me.hsbFrom.Name = "hsbFrom"
@@ -669,7 +669,6 @@ Partial Class frmMain
         '
         'Label3
         '
-        Me.Label3.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.Label3.ForeColor = System.Drawing.Color.SlateGray
         Me.Label3.Location = New System.Drawing.Point(284, 23)
         Me.Label3.Name = "Label3"
@@ -700,7 +699,7 @@ Partial Class frmMain
         Me.btnSaveCode.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.btnSaveCode.Size = New System.Drawing.Size(113, 23)
         Me.btnSaveCode.TabIndex = 30
-        Me.btnSaveCode.Text = "Save gb-Code"
+        Me.btnSaveCode.Text = "Save Comp"
         Me.btnSaveCode.UseVisualStyleBackColor = True
         '
         'rtbCompensated

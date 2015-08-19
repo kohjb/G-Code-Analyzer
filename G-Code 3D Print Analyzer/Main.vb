@@ -67,28 +67,19 @@ Public Class frmMain
     Private Sub glc3DView_Load(sender As Object, e As EventArgs) Handles glc3DView.Load
         'Debug.Print("GL Cleared")
         blnGLLoaded = True
+        glc3DView.Invalidate()
+        glc3DView.Update()
     End Sub
 
     Private Sub glc3DView_Paint(sender As Object, e As PaintEventArgs) Handles glc3DView.Paint
         If (Not blnGLLoaded) Then Return
 
         blnManualMode = False   'Program is doing stuff
-
+        'Debug.Print("Paint..." & DateTime.Now)
         'Clear Buffers
         GL.Clear(ClearBufferMask.ColorBufferBit Or ClearBufferMask.DepthBufferBit)  'Clear Color and Depth buffers
         GL.ClearColor(Color.Black)
 
-        DrawAxes()
-        If blngCodeLoaded Then
-            If chbSlow.Checked Then
-                glc3DView.SwapBuffers()
-                GL.Clear(ClearBufferMask.ColorBufferBit Or ClearBufferMask.DepthBufferBit)  'Clear Color and Depth buffers
-                GL.ClearColor(Color.Black)
-                glc3DView.SwapBuffers()
-            End If
-            DrawVectors()
-            chbSlow.Checked = False
-        End If
         SetupViewport()
 
         'Sync and Swap
@@ -591,11 +582,6 @@ Public Class frmMain
         Dim h As Integer = glc3DView.Height
         Dim perspective, lookat As Matrix4
 
-        If chbAutotgt.Checked Then
-            hsbTargetX.Value = (TgtXMax + TgtXMin) / 2
-            hsbTargetY.Value = (TgtYMax + TgtYMin) / 2
-            hsbTargetZ.Value = (TgtZMax + TgtZMin) / 2
-        End If
 
         CameraPos.Xyz = New Vector3(hsbCameraX.Value, hsbCameraY.Value, hsbCameraZ.Value)
         TargetPos = New Vector4(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value, 0)
@@ -610,6 +596,23 @@ Public Class frmMain
         GL.LoadIdentity()
         GL.LoadMatrix(perspective)
         'GL.Ortho(0, w, 0, h, 0, 10) 'Setup Orthographic Projection, bottom left is 0,0 (left, right, bottom, top, zmin, zmax) - zmin is furthest away
+
+        DrawAxes()
+        If blngCodeLoaded Then
+            If chbSlow.Checked Then
+                glc3DView.SwapBuffers()
+                GL.Clear(ClearBufferMask.ColorBufferBit Or ClearBufferMask.DepthBufferBit)  'Clear Color and Depth buffers
+                GL.ClearColor(Color.Black)
+                glc3DView.SwapBuffers()
+                chbSlow.Checked = False 'Reset slow mo 
+            End If
+            DrawVectors()       'Draw in 3D space, Determines target and its bounds
+            If chbAutotgt.Checked Then
+                hsbTargetX.Value = (TgtXMax + TgtXMin) / 2
+                hsbTargetY.Value = (TgtYMax + TgtYMin) / 2
+                hsbTargetZ.Value = (TgtZMax + TgtZMin) / 2
+            End If
+        End If
 
         GL.Viewport(ViewportX, ViewportY, w, h) 'Size of window
         GL.Enable(EnableCap.DepthTest) 'Enable correct Z Drawings
@@ -773,12 +776,12 @@ Public Class frmMain
     Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         blnManualMode = False   'Program is doing stuff
         'Set up Perspectives
-        hsbCameraX.Value = 185 : hsbCameraY.Value = 74 : hsbCameraZ.Value = 63
+        hsbCameraX.Value = 185 : hsbCameraY.Value = 75 : hsbCameraZ.Value = 75
         CameraPos = New Vector4(hsbCameraX.Value, hsbCameraY.Value, hsbCameraZ.Value, 1)
         hsbCameraZoom.Value = 90
         CameraFOV = hsbCameraZoom.Value
 
-        hsbTargetX.Value = 144 : hsbTargetY.Value = 74 : hsbTargetZ.Value = 39
+        hsbTargetX.Value = 75 : hsbTargetY.Value = 75 : hsbTargetZ.Value = 0
         TargetPos = New Vector4(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value, 0)
         TgtXMin = 150 : TgtXMax = 0 : TgtYMin = 150 : TgtYMax = 0 : TgtZMin = 150 : TgtZMax = 0
 
@@ -1183,6 +1186,7 @@ Public Class frmMain
     End Sub
 
     Private Sub glc3DView_MouseWheel(sender As Object, e As MouseEventArgs) Handles glc3DView.MouseWheel
+        'Debug.Print("MouseWheel..." & DateTime.Now)
         If e.Delta < 0 Then
             If CameraFOV < 10 Then
                 CameraFOV += 1
@@ -1200,6 +1204,7 @@ Public Class frmMain
         End If
         hsbCameraZoom.Value = CameraFOV
         glc3DView.Invalidate()
+        glc3DView.Update()
     End Sub
 
     Private Sub glc3DView_MouseHover(sender As Object, e As EventArgs) Handles glc3DView.MouseHover
