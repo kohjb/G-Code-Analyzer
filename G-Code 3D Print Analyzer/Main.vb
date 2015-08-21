@@ -237,7 +237,9 @@ Public Class frmMain
         'And the Physical Vectors - what the printer actually prints.
 
         lastX = 0 : lastY = 0 : lastZ = 0 : lastE = 0
-        BacklashXmin = 0 : BacklashXmax = 0 : BacklashYmin = 0 : BacklashYMax = 0 : BacklashZMin = 0 : BacklashZMax = 0 : BacklashEMin = 0 : BacklashEMax = 0
+        'Assign starting backlash values. 
+        BacklashXmin = 0 : BacklashXmax = nudBacklashX.Value : BacklashYmin = 0 : BacklashYMax = nudBacklashY.Value : BacklashZMin = 0 : BacklashZMax = nudBacklashZ.Value
+        BacklashEMin = 0 : BacklashEMax = 0
         myVectors = 0
 
         For i = 1 To mygLines
@@ -272,46 +274,10 @@ Public Class frmMain
                         '  if CurX < BacklashXMin, PhysicalX -= BacklashXMin - CurX, BacklashXMin = CurX 
                         '
                         'Compensation for backlash
-                        '  If CurX between BacklashXmin and Xmax, Move to CurX + 1 will have no effect in PhysX
-                        '  To move +1 in PhysX, must move CurX to CurX + 1 + (BacklashXMax - CurX)
-                        '  To move -1 in PhysX, must move CurX to CurX - 1 - (CurX - BacklashXMin)
-
-                        If curX > BacklashXmax Then
-                            PhysX += curX - BacklashXmax
-                            BacklashXmax = curX
-                            BacklashXmin = BacklashXmax - nudBacklashX.Value
-                        ElseIf curX < BacklashXmin Then
-                            PhysX -= BacklashXmin - curX
-                            BacklashXmin = curX
-                            BacklashXmax = BacklashXmin + nudBacklashX.Value
-                        End If
-                        If curY > BacklashYMax Then
-                            PhysY += curY - BacklashYMax
-                            BacklashYMax = curY
-                            BacklashYmin = BacklashYMax - nudBacklashY.Value
-                        ElseIf curY < BacklashYmin Then
-                            PhysY -= BacklashYmin - curY
-                            BacklashYmin = curY
-                            BacklashYMax = BacklashYmin + nudBacklashY.Value
-                        End If
-                        If curZ > BacklashZMax Then
-                            PhysZ += curZ - BacklashZMax
-                            BacklashZMax = curZ
-                            BacklashZMin = BacklashZMax - nudBacklashZ.Value
-                        ElseIf curZ < BacklashZMin Then
-                            PhysZ -= BacklashZMin - curZ
-                            BacklashZMin = curZ
-                            BacklashZMax = BacklashZMin + nudBacklashZ.Value
-                        End If
-                        If curE > BacklashEMax Then
-                            PhysE += curE - BacklashEMax
-                            BacklashEMax = curE
-                            BacklashEMin = BacklashEMax - 0
-                        ElseIf curE < BacklashEMin Then
-                            PhysE -= BacklashEMin - curE
-                            BacklashEMin = curE
-                            BacklashEMax = BacklashEMin + 0
-                        End If
+                        CalcBacklash(curX, PhysX, BacklashXmin, BacklashXmax, nudBacklashX.Value)
+                        CalcBacklash(curY, PhysY, BacklashYmin, BacklashYMax, nudBacklashY.Value)
+                        CalcBacklash(curZ, PhysZ, BacklashZMin, BacklashZMax, nudBacklashZ.Value)
+                        CalcBacklash(curE, PhysE, BacklashEMin, BacklashEMax, 0)   'No Backlash for E for now
 
                         'Assign backlash compensated values
                         If curX <> PhysX Then
@@ -433,6 +399,21 @@ Public Class frmMain
             'Debug.Print(i & " : " & mygCode(i).Text)
         Next
 
+    End Sub
+
+    Private Sub CalcBacklash(ByRef curN As Single, ByRef physN As Single, ByRef BacklashMin As Single, ByRef BacklashMax As Single, Backlash As Single)
+        '  If CurX between BacklashXmin and Xmax, Move to CurX + 1 will have no effect in PhysX
+        '  To move +1 in PhysX, must move CurX to CurX + 1 + (BacklashXMax - CurX)
+        '  To move -1 in PhysX, must move CurX to CurX - 1 - (CurX - BacklashXMin)
+        If curN > BacklashMax Then
+            physN += curN - BacklashMax
+            BacklashMax = curN
+            BacklashMin = BacklashMax - Backlash
+        ElseIf curN < BacklashMin Then
+            physN -= BacklashMin - curN
+            BacklashMin = curN
+            BacklashMax = BacklashMin + Backlash
+        End If
     End Sub
 
     Private Sub InterpretCode()
