@@ -64,6 +64,9 @@ Partial Class frmMain
         Me.hsbTo = New System.Windows.Forms.HScrollBar()
         Me.hsbFrom = New System.Windows.Forms.HScrollBar()
         Me.hsbSingleLayer = New System.Windows.Forms.HScrollBar()
+        Me.lblDrawOne = New System.Windows.Forms.Label()
+        Me.lblDrawFrom = New System.Windows.Forms.Label()
+        Me.lblDrawTo = New System.Windows.Forms.Label()
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
         Me.chbSlow = New System.Windows.Forms.CheckBox()
         Me.optColorRainbow = New System.Windows.Forms.RadioButton()
@@ -79,6 +82,13 @@ Partial Class frmMain
         Me.optSource = New System.Windows.Forms.RadioButton()
         Me.btnCompensate = New System.Windows.Forms.Button()
         Me.sfdgCompensated = New System.Windows.Forms.SaveFileDialog()
+        Me.lblCameraX = New System.Windows.Forms.Label()
+        Me.lblCameraY = New System.Windows.Forms.Label()
+        Me.lblCameraZ = New System.Windows.Forms.Label()
+        Me.lblCameraFOV = New System.Windows.Forms.Label()
+        Me.lblTargetX = New System.Windows.Forms.Label()
+        Me.lblTargetY = New System.Windows.Forms.Label()
+        Me.lblTargetZ = New System.Windows.Forms.Label()
         CType(Me.nudBacklashX, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashY, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashZ, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -195,7 +205,7 @@ Partial Class frmMain
         Me.hsbCameraX.Minimum = -300
         Me.hsbCameraX.Name = "hsbCameraX"
         Me.hsbCameraX.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.hsbCameraX.Size = New System.Drawing.Size(184, 22)
+        Me.hsbCameraX.Size = New System.Drawing.Size(164, 22)
         Me.hsbCameraX.TabIndex = 10
         '
         'Label2
@@ -219,7 +229,7 @@ Partial Class frmMain
         Me.hsbCameraY.Minimum = -300
         Me.hsbCameraY.Name = "hsbCameraY"
         Me.hsbCameraY.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.hsbCameraY.Size = New System.Drawing.Size(184, 22)
+        Me.hsbCameraY.Size = New System.Drawing.Size(164, 22)
         Me.hsbCameraY.TabIndex = 10
         '
         'hsbCameraZ
@@ -230,7 +240,7 @@ Partial Class frmMain
         Me.hsbCameraZ.Minimum = -300
         Me.hsbCameraZ.Name = "hsbCameraZ"
         Me.hsbCameraZ.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.hsbCameraZ.Size = New System.Drawing.Size(184, 22)
+        Me.hsbCameraZ.Size = New System.Drawing.Size(164, 22)
         Me.hsbCameraZ.TabIndex = 10
         '
         'btnDebug
@@ -283,7 +293,7 @@ Partial Class frmMain
         '
         Me.Label4.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Label4.AutoSize = True
-        Me.Label4.Location = New System.Drawing.Point(799, 77)
+        Me.Label4.Location = New System.Drawing.Point(799, 80)
         Me.Label4.Name = "Label4"
         Me.Label4.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.Label4.Size = New System.Drawing.Size(14, 13)
@@ -295,7 +305,7 @@ Partial Class frmMain
         '
         Me.Label5.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Label5.AutoSize = True
-        Me.Label5.Location = New System.Drawing.Point(799, 99)
+        Me.Label5.Location = New System.Drawing.Point(799, 102)
         Me.Label5.Name = "Label5"
         Me.Label5.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.Label5.Size = New System.Drawing.Size(14, 13)
@@ -307,7 +317,7 @@ Partial Class frmMain
         '
         Me.Label6.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Label6.AutoSize = True
-        Me.Label6.Location = New System.Drawing.Point(799, 121)
+        Me.Label6.Location = New System.Drawing.Point(799, 124)
         Me.Label6.Name = "Label6"
         Me.Label6.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.Label6.Size = New System.Drawing.Size(14, 13)
@@ -367,37 +377,34 @@ Partial Class frmMain
         'hsbTargetZ
         '
         Me.hsbTargetZ.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.hsbTargetZ.Enabled = False
         Me.hsbTargetZ.Location = New System.Drawing.Point(811, 242)
         Me.hsbTargetZ.Maximum = 300
         Me.hsbTargetZ.Minimum = -300
         Me.hsbTargetZ.Name = "hsbTargetZ"
         Me.hsbTargetZ.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.hsbTargetZ.Size = New System.Drawing.Size(184, 22)
+        Me.hsbTargetZ.Size = New System.Drawing.Size(164, 22)
         Me.hsbTargetZ.TabIndex = 15
         '
         'hsbTargetY
         '
         Me.hsbTargetY.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.hsbTargetY.Enabled = False
         Me.hsbTargetY.Location = New System.Drawing.Point(811, 220)
         Me.hsbTargetY.Maximum = 300
         Me.hsbTargetY.Minimum = -300
         Me.hsbTargetY.Name = "hsbTargetY"
         Me.hsbTargetY.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.hsbTargetY.Size = New System.Drawing.Size(184, 22)
+        Me.hsbTargetY.Size = New System.Drawing.Size(164, 22)
         Me.hsbTargetY.TabIndex = 16
         '
         'hsbTargetX
         '
         Me.hsbTargetX.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.hsbTargetX.Enabled = False
         Me.hsbTargetX.Location = New System.Drawing.Point(811, 198)
         Me.hsbTargetX.Maximum = 300
         Me.hsbTargetX.Minimum = -300
         Me.hsbTargetX.Name = "hsbTargetX"
         Me.hsbTargetX.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.hsbTargetX.Size = New System.Drawing.Size(184, 22)
+        Me.hsbTargetX.Size = New System.Drawing.Size(164, 22)
         Me.hsbTargetX.TabIndex = 17
         '
         'hsbCameraZoom
@@ -408,7 +415,7 @@ Partial Class frmMain
         Me.hsbCameraZoom.Minimum = 1
         Me.hsbCameraZoom.Name = "hsbCameraZoom"
         Me.hsbCameraZoom.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.hsbCameraZoom.Size = New System.Drawing.Size(184, 22)
+        Me.hsbCameraZoom.Size = New System.Drawing.Size(164, 22)
         Me.hsbCameraZoom.TabIndex = 10
         Me.hsbCameraZoom.Value = 10
         '
@@ -416,7 +423,7 @@ Partial Class frmMain
         '
         Me.Label11.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Label11.AutoSize = True
-        Me.Label11.Location = New System.Drawing.Point(778, 143)
+        Me.Label11.Location = New System.Drawing.Point(778, 146)
         Me.Label11.Name = "Label11"
         Me.Label11.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.Label11.Size = New System.Drawing.Size(34, 13)
@@ -546,6 +553,9 @@ Partial Class frmMain
         Me.GroupBox1.Controls.Add(Me.optDrawOne)
         Me.GroupBox1.Controls.Add(Me.optDrawAll)
         Me.GroupBox1.Controls.Add(Me.hsbSingleLayer)
+        Me.GroupBox1.Controls.Add(Me.lblDrawOne)
+        Me.GroupBox1.Controls.Add(Me.lblDrawFrom)
+        Me.GroupBox1.Controls.Add(Me.lblDrawTo)
         Me.GroupBox1.Location = New System.Drawing.Point(781, 403)
         Me.GroupBox1.Name = "GroupBox1"
         Me.GroupBox1.RightToLeft = System.Windows.Forms.RightToLeft.No
@@ -564,7 +574,7 @@ Partial Class frmMain
         Me.hsbTo.Minimum = 1
         Me.hsbTo.Name = "hsbTo"
         Me.hsbTo.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.hsbTo.Size = New System.Drawing.Size(188, 22)
+        Me.hsbTo.Size = New System.Drawing.Size(167, 22)
         Me.hsbTo.TabIndex = 19
         Me.hsbTo.Value = 1
         Me.hsbTo.Visible = False
@@ -579,7 +589,7 @@ Partial Class frmMain
         Me.hsbFrom.Minimum = 1
         Me.hsbFrom.Name = "hsbFrom"
         Me.hsbFrom.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.hsbFrom.Size = New System.Drawing.Size(188, 22)
+        Me.hsbFrom.Size = New System.Drawing.Size(167, 22)
         Me.hsbFrom.TabIndex = 19
         Me.hsbFrom.Value = 1
         Me.hsbFrom.Visible = False
@@ -594,10 +604,52 @@ Partial Class frmMain
         Me.hsbSingleLayer.Minimum = 1
         Me.hsbSingleLayer.Name = "hsbSingleLayer"
         Me.hsbSingleLayer.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.hsbSingleLayer.Size = New System.Drawing.Size(188, 22)
+        Me.hsbSingleLayer.Size = New System.Drawing.Size(167, 22)
         Me.hsbSingleLayer.TabIndex = 18
         Me.hsbSingleLayer.Value = 1
         Me.hsbSingleLayer.Visible = False
+        '
+        'lblDrawOne
+        '
+        Me.lblDrawOne.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.lblDrawOne.AutoSize = True
+        Me.lblDrawOne.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblDrawOne.Location = New System.Drawing.Point(190, 65)
+        Me.lblDrawOne.Name = "lblDrawOne"
+        Me.lblDrawOne.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.lblDrawOne.Size = New System.Drawing.Size(25, 13)
+        Me.lblDrawOne.TabIndex = 14
+        Me.lblDrawOne.Text = "100"
+        Me.lblDrawOne.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        Me.lblDrawOne.Visible = False
+        '
+        'lblDrawFrom
+        '
+        Me.lblDrawFrom.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.lblDrawFrom.AutoSize = True
+        Me.lblDrawFrom.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblDrawFrom.Location = New System.Drawing.Point(191, 87)
+        Me.lblDrawFrom.Name = "lblDrawFrom"
+        Me.lblDrawFrom.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.lblDrawFrom.Size = New System.Drawing.Size(25, 13)
+        Me.lblDrawFrom.TabIndex = 14
+        Me.lblDrawFrom.Text = "100"
+        Me.lblDrawFrom.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        Me.lblDrawFrom.Visible = False
+        '
+        'lblDrawTo
+        '
+        Me.lblDrawTo.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.lblDrawTo.AutoSize = True
+        Me.lblDrawTo.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblDrawTo.Location = New System.Drawing.Point(191, 109)
+        Me.lblDrawTo.Name = "lblDrawTo"
+        Me.lblDrawTo.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.lblDrawTo.Size = New System.Drawing.Size(25, 13)
+        Me.lblDrawTo.TabIndex = 14
+        Me.lblDrawTo.Text = "100"
+        Me.lblDrawTo.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        Me.lblDrawTo.Visible = False
         '
         'GroupBox2
         '
@@ -773,6 +825,97 @@ Partial Class frmMain
         Me.btnCompensate.Text = "Compensate Code"
         Me.btnCompensate.UseVisualStyleBackColor = True
         '
+        'lblCameraX
+        '
+        Me.lblCameraX.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.lblCameraX.AutoSize = True
+        Me.lblCameraX.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblCameraX.Location = New System.Drawing.Point(978, 80)
+        Me.lblCameraX.Name = "lblCameraX"
+        Me.lblCameraX.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.lblCameraX.Size = New System.Drawing.Size(25, 13)
+        Me.lblCameraX.TabIndex = 14
+        Me.lblCameraX.Text = "100"
+        Me.lblCameraX.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'lblCameraY
+        '
+        Me.lblCameraY.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.lblCameraY.AutoSize = True
+        Me.lblCameraY.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblCameraY.Location = New System.Drawing.Point(978, 102)
+        Me.lblCameraY.Name = "lblCameraY"
+        Me.lblCameraY.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.lblCameraY.Size = New System.Drawing.Size(25, 13)
+        Me.lblCameraY.TabIndex = 14
+        Me.lblCameraY.Text = "100"
+        Me.lblCameraY.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'lblCameraZ
+        '
+        Me.lblCameraZ.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.lblCameraZ.AutoSize = True
+        Me.lblCameraZ.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblCameraZ.Location = New System.Drawing.Point(978, 124)
+        Me.lblCameraZ.Name = "lblCameraZ"
+        Me.lblCameraZ.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.lblCameraZ.Size = New System.Drawing.Size(25, 13)
+        Me.lblCameraZ.TabIndex = 14
+        Me.lblCameraZ.Text = "100"
+        Me.lblCameraZ.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'lblCameraFOV
+        '
+        Me.lblCameraFOV.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.lblCameraFOV.AutoSize = True
+        Me.lblCameraFOV.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblCameraFOV.Location = New System.Drawing.Point(978, 146)
+        Me.lblCameraFOV.Name = "lblCameraFOV"
+        Me.lblCameraFOV.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.lblCameraFOV.Size = New System.Drawing.Size(25, 13)
+        Me.lblCameraFOV.TabIndex = 14
+        Me.lblCameraFOV.Text = "100"
+        Me.lblCameraFOV.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'lblTargetX
+        '
+        Me.lblTargetX.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.lblTargetX.AutoSize = True
+        Me.lblTargetX.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblTargetX.Location = New System.Drawing.Point(978, 201)
+        Me.lblTargetX.Name = "lblTargetX"
+        Me.lblTargetX.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.lblTargetX.Size = New System.Drawing.Size(25, 13)
+        Me.lblTargetX.TabIndex = 14
+        Me.lblTargetX.Text = "100"
+        Me.lblTargetX.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'lblTargetY
+        '
+        Me.lblTargetY.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.lblTargetY.AutoSize = True
+        Me.lblTargetY.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblTargetY.Location = New System.Drawing.Point(978, 223)
+        Me.lblTargetY.Name = "lblTargetY"
+        Me.lblTargetY.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.lblTargetY.Size = New System.Drawing.Size(25, 13)
+        Me.lblTargetY.TabIndex = 14
+        Me.lblTargetY.Text = "100"
+        Me.lblTargetY.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'lblTargetZ
+        '
+        Me.lblTargetZ.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.lblTargetZ.AutoSize = True
+        Me.lblTargetZ.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblTargetZ.Location = New System.Drawing.Point(978, 245)
+        Me.lblTargetZ.Name = "lblTargetZ"
+        Me.lblTargetZ.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.lblTargetZ.Size = New System.Drawing.Size(25, 13)
+        Me.lblTargetZ.TabIndex = 14
+        Me.lblTargetZ.Text = "100"
+        Me.lblTargetZ.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -796,6 +939,13 @@ Partial Class frmMain
         Me.Controls.Add(Me.Label11)
         Me.Controls.Add(Me.Label6)
         Me.Controls.Add(Me.Label5)
+        Me.Controls.Add(Me.lblCameraFOV)
+        Me.Controls.Add(Me.lblTargetZ)
+        Me.Controls.Add(Me.lblTargetY)
+        Me.Controls.Add(Me.lblCameraZ)
+        Me.Controls.Add(Me.lblTargetX)
+        Me.Controls.Add(Me.lblCameraY)
+        Me.Controls.Add(Me.lblCameraX)
         Me.Controls.Add(Me.Label4)
         Me.Controls.Add(Me.btnDebug)
         Me.Controls.Add(Me.Label2)
@@ -889,4 +1039,14 @@ Partial Class frmMain
     Friend WithEvents optSource As RadioButton
     Friend WithEvents btnCompensate As Button
     Friend WithEvents sfdgCompensated As SaveFileDialog
+    Friend WithEvents lblCameraX As Label
+    Friend WithEvents lblCameraY As Label
+    Friend WithEvents lblCameraZ As Label
+    Friend WithEvents lblCameraFOV As Label
+    Friend WithEvents lblTargetX As Label
+    Friend WithEvents lblTargetY As Label
+    Friend WithEvents lblTargetZ As Label
+    Friend WithEvents lblDrawOne As Label
+    Friend WithEvents lblDrawFrom As Label
+    Friend WithEvents lblDrawTo As Label
 End Class

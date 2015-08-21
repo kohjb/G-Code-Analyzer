@@ -74,7 +74,7 @@ Public Class frmMain
     Private Sub glc3DView_Paint(sender As Object, e As PaintEventArgs) Handles glc3DView.Paint
         If (Not blnGLLoaded) Then Return
 
-        blnManualMode = False   'Program is doing stuff
+        'blnManualMode = False   'Program is doing stuff
         'Debug.Print("Paint..." & DateTime.Now)
         'Clear Buffers
         GL.Clear(ClearBufferMask.ColorBufferBit Or ClearBufferMask.DepthBufferBit)  'Clear Color and Depth buffers
@@ -87,7 +87,7 @@ Public Class frmMain
         'GraphicsContext.SwapInterval
         glc3DView.SwapBuffers() 'Takes from the 'GL' and puts into control
 
-        blnManualMode = True    'Program has stopped doing stuff
+        'blnManualMode = True    'Program has stopped doing stuff
     End Sub
 
     Private Sub RawtoInterpreted()
@@ -591,11 +591,11 @@ Public Class frmMain
         GL.LoadIdentity()
         GL.LoadMatrix(lookat)
 
-        perspective = Matrix4.CreatePerspectiveFieldOfView(CameraFOV * Math.PI / 180, w / h, 1, 10000) 'Setup Perspective (fov, aspect ratio, zNear, zFar)
+        perspective = Matrix4.CreatePerspectiveFieldOfView(hsbCameraZoom.Value * Math.PI / 180, w / h, 1, 10000) 'Setup Perspective (fov, aspect ratio, zNear, zFar)
         GL.MatrixMode(MatrixMode.Projection)
         GL.LoadIdentity()
         GL.LoadMatrix(perspective)
-        'GL.Ortho(0, w, 0, h, 0, 10) 'Setup Orthographic Projection, bottom left is 0,0 (left, right, bottom, top, zmin, zmax) - zmin is furthest away
+        'GL.Ortho(0, w, 0, h, 2000, -2000) 'Setup Orthographic Projection, bottom left is 0,0 (left, right, bottom, top, zmin, zmax) - zmin is furthest away
 
         DrawAxes()
         If blngCodeLoaded Then
@@ -792,17 +792,13 @@ Public Class frmMain
         blnManualMode = True    'Program has stopped doing stuff
     End Sub
 
-#Region "UI Interaction section"
+#Region "UI Interaction section ************************************************************************************************"
     Public IsDragging As Boolean = False
     Public IsRightButton As Boolean = False
     Public isLeftButton As Boolean = False
     Public StartPoint, FirstPoint, LastPoint As Point
 
     Private Sub btnDebug_Click(sender As Object, e As EventArgs) Handles btnDebug.Click
-        'Rnd(-1)
-        'Randomize(2 + 1)
-        'Debug.Print(Rnd() & ", " & Rnd() & ", " & Rnd())
-
     End Sub
 
     Private Sub btnLoad_Click(sender As Object, e As EventArgs) Handles btnLoad.Click
@@ -847,6 +843,7 @@ Public Class frmMain
             lblPrompt.ForeColor = tmpcolor
             lblPrompt.Text = "Loaded file : " & ofdgCodeFile.FileName & ". " & mygLayers & " Layers."
             glc3DView.Invalidate()
+            glc3DView.Update()
         End If
     End Sub
 
@@ -887,6 +884,7 @@ Public Class frmMain
     Private Sub btnInterpret_Click(sender As Object, e As EventArgs) Handles btnInterpret.Click
         InterpretCode()
         glc3DView.Invalidate()
+        glc3DView.Update()
     End Sub
 
     Private Sub btnCompensate_Click(sender As Object, e As EventArgs) Handles btnCompensate.Click
@@ -910,108 +908,17 @@ Public Class frmMain
         chbAutotgt.Checked = True
 
         glc3DView.Invalidate()
-    End Sub
-
-    Private Sub nudBacklashX_ValueChanged(sender As Object, e As EventArgs) Handles nudBacklashX.ValueChanged, nudBacklashY.ValueChanged, nudBacklashZ.ValueChanged
-        If (nudBacklashX.Value <> 0 Or nudBacklashY.Value <> 0 Or nudBacklashZ.Value <> 0) And blnManualMode Then
-            blnManualMode = False
-            ProcessVectors()
-            glc3DView.Invalidate()
-            btnCompensate.Enabled = True
-            blnManualMode = True
-        Else
-            btnCompensate.Enabled = False
-        End If
-    End Sub
-
-    Private Sub optColorSolid_CheckedChanged(sender As Object, e As EventArgs) Handles optColorSolid.CheckedChanged, optColorLayers.CheckedChanged, optColorRainbow.CheckedChanged
-        glc3DView.Invalidate()
-    End Sub
-
-    Private Sub optDrawAll_CheckedChanged(sender As Object, e As EventArgs) Handles optDrawAll.CheckedChanged
-        If optDrawAll.Checked Then
-            nend = myVectors    'Set start and end to all vectors
-            nstart = 1
-            lblPrompt.Text = "Drawing All Layers"
-
-            rtbInterpreted.SelectionLength = 0
-            rtbInterpreted.SelectionStart = 0
-
-            glc3DView.Invalidate()
-        End If
-    End Sub
-
-    Private Sub optDrawOne_CheckedChanged(sender As Object, e As EventArgs) Handles optDrawOne.CheckedChanged
-        If optDrawOne.Checked Then      'Reposition option button based on visibility
-            hsbSingleLayer.Visible = True
-            optDrawFromTo.Top = hsbSingleLayer.Bottom + (optDrawOne.Top - optDrawAll.Bottom)
-
-            hsbSingleLayer_ValueChanged(sender, e)
-
-            'nstart = hsbSingleLayer.Value
-            'nend = nstart
-            'lblPrompt.Text = "Layer = " & nstart
-            'glc3DView.Invalidate()
-        Else
-            hsbSingleLayer.Visible = False
-            optDrawFromTo.Top = optDrawOne.Bottom + (optDrawOne.Top - optDrawAll.Bottom)
-        End If
-    End Sub
-
-    Private Sub optDrawFromTo_CheckedChanged(sender As Object, e As EventArgs) Handles optDrawFromTo.CheckedChanged
-        If optDrawFromTo.Checked Then
-            hsbFrom.Visible = True
-            hsbTo.Visible = True
-            hsbFrom.Top = optDrawFromTo.Bottom + (optDrawOne.Top - optDrawAll.Bottom)
-            hsbTo.Top = hsbFrom.Bottom + (optDrawOne.Top - optDrawAll.Bottom)
-            If blngCodeLoaded Then
-                nend = hsbTo.Value
-                nstart = hsbFrom.Value
-                If blnManualMode Then 'Modify selection in rtbInterpreted if this was manually adjusted.
-                    Dim charStart, charEnd As Integer
-                    blnManualMode = False
-                    charStart = rtbInterpreted.GetFirstCharIndexFromLine(hsbFrom.Value)
-                    charEnd = rtbInterpreted.GetFirstCharIndexFromLine(hsbTo.Value + 1) - 1
-                    rtbInterpreted.SelectionStart = charStart
-                    rtbInterpreted.SelectionLength = charEnd - rtbInterpreted.SelectionStart
-                    rtbInterpreted.Focus()
-                    blnManualMode = True
-                End If
-            End If
-            lblPrompt.Text = "Draw lines from : " & nstart & " to " & nend
-            glc3DView.Invalidate()
-        Else
-            hsbFrom.Visible = False
-            hsbTo.Visible = False
-        End If
-    End Sub
-
-    Private Sub optSource_CheckedChanged(sender As Object, e As EventArgs) Handles optSource.CheckedChanged, optInterpreted.CheckedChanged, optCompensated.CheckedChanged
-        If optSource.Checked Then
-            rtbSource.Visible = True
-            rtbInterpreted.Visible = False
-            rtbCompensated.Visible = False
-        ElseIf optInterpreted.Checked Then
-            rtbSource.Visible = False
-            rtbInterpreted.Visible = True
-            rtbCompensated.Visible = False
-        Else
-            rtbSource.Visible = False
-            rtbInterpreted.Visible = False
-            rtbCompensated.Visible = True
-        End If
+        glc3DView.Update()
     End Sub
 
     Private Sub chbAutotgt_CheckedChanged(sender As Object, e As EventArgs) Handles chbAutotgt.CheckedChanged
-        If chbAutotgt.Checked Then
-            hsbTargetX.Enabled = False
-            hsbTargetY.Enabled = False
-            hsbTargetZ.Enabled = False
-            glc3DView.Invalidate()
-        Else
-            hsbTargetX.Enabled = True
-            hsbTargetY.Enabled = True
-            hsbTargetZ.Enabled = True
+        If blnManualMode Then
+            If chbAutotgt.Checked Then
+                blnManualMode = False
+                glc3DView.Invalidate()
+                glc3DView.Update()
+                blnManualMode = True
+            End If
         End If
     End Sub
 
@@ -1032,6 +939,13 @@ Public Class frmMain
         End If
     End Sub
 
+    Private Sub glc3DView_MouseClick(sender As Object, e As MouseEventArgs) Handles glc3DView.MouseClick
+        'xTrans += 1
+        'Debug.Print(xTrans)
+        glc3DView.Invalidate()
+        glc3DView.Update()
+    End Sub
+
     Private Sub glc3DView_MouseUp(sender As Object, e As MouseEventArgs) Handles glc3DView.MouseUp
         IsDragging = False
     End Sub
@@ -1039,6 +953,8 @@ Public Class frmMain
     Private Sub glc3DView_MouseMove(sender As Object, e As MouseEventArgs) Handles glc3DView.MouseMove
 
         If IsDragging Then
+
+            blnManualMode = False
 
             'Dim blnShiftKeyDown As Boolean
             'blnShiftKeyDown = ((Control.ModifierKeys And Keys.Shift) = Keys.Shift)
@@ -1103,6 +1019,7 @@ Public Class frmMain
                     hsbCameraY.Value = CameraPos.Y
                     hsbCameraZ.Value = CameraPos.Z
                     glc3DView.Invalidate()
+                    glc3DView.Update()
                 End If
 
                 StartPoint = EndPoint
@@ -1177,34 +1094,41 @@ Public Class frmMain
                     hsbTargetY.Value = TargetPos.Y
                     hsbTargetZ.Value = TargetPos.Z
                     glc3DView.Invalidate()
+                    glc3DView.Update()
                 End If
 
                 StartPoint = EndPoint
                 LastPoint = EndPoint
             End If
+
+            blnManualMode = True
         End If
     End Sub
 
     Private Sub glc3DView_MouseWheel(sender As Object, e As MouseEventArgs) Handles glc3DView.MouseWheel
         'Debug.Print("MouseWheel..." & DateTime.Now)
-        If e.Delta < 0 Then
-            If CameraFOV < 10 Then
-                CameraFOV += 1
-            Else
-                CameraFOV += 10
+        If blnManualMode Then
+            blnManualMode = False
+            If e.Delta < 0 Then
+                If CameraFOV < 10 Then
+                    CameraFOV += 1
+                Else
+                    CameraFOV += 10
+                End If
+                If CameraFOV > 170 Then CameraFOV = 170
+            ElseIf e.Delta > 0 Then
+                If CameraFOV > 10 Then
+                    CameraFOV -= 10
+                Else
+                    CameraFOV -= 1
+                End If
+                If CameraFOV < 1 Then CameraFOV = 1
             End If
-            If CameraFOV > 170 Then CameraFOV = 170
-        ElseIf e.Delta > 0 Then
-            If CameraFOV > 10 Then
-                CameraFOV -= 10
-            Else
-                CameraFOV -= 1
-            End If
-            If CameraFOV < 1 Then CameraFOV = 1
+            hsbCameraZoom.Value = CameraFOV
+            glc3DView.Invalidate()
+            glc3DView.Update()
+            blnManualMode = True
         End If
-        hsbCameraZoom.Value = CameraFOV
-        glc3DView.Invalidate()
-        glc3DView.Update()
     End Sub
 
     Private Sub glc3DView_MouseHover(sender As Object, e As EventArgs) Handles glc3DView.MouseHover
@@ -1213,13 +1137,31 @@ Public Class frmMain
         End If
     End Sub
 
-    Private Sub hsbCameraX_ValueChanged(sender As Object, e As EventArgs) Handles hsbCameraX.ValueChanged, hsbCameraY.ValueChanged, hsbCameraZ.ValueChanged
-        'glc3DView.Invalidate()
+    Private Sub hsbCameraX_ValueChanged(sender As Object, e As EventArgs) Handles hsbCameraX.ValueChanged, hsbCameraY.ValueChanged, hsbCameraZ.ValueChanged, hsbCameraZoom.ValueChanged
+        If blnManualMode Then
+            blnManualMode = False
+            glc3DView.Invalidate()
+            glc3DView.Update()
+            blnManualMode = True
+        End If
+        lblCameraX.Text = hsbCameraX.Value
+        lblCameraY.Text = hsbCameraY.Value
+        lblCameraZ.Text = hsbCameraZ.Value
+        lblCameraFOV.Text = hsbCameraZoom.Value
     End Sub
 
-    Private Sub HScrollBar3_Scroll(sender As Object, e As ScrollEventArgs) Handles hsbTargetX.Scroll, hsbTargetY.Scroll, hsbTargetZ.Scroll
-        TargetPos = New Vector4(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value, 0)
-        glc3DView.Invalidate()
+    Private Sub hsbTargetZ_ValueChanged(sender As Object, e As EventArgs) Handles hsbTargetZ.ValueChanged, hsbTargetY.ValueChanged, hsbTargetZ.ValueChanged
+        'TargetPos = New Vector4(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value, 0)
+        If blnManualMode Then
+            blnManualMode = False
+            chbAutotgt.Checked = False      'Uncheck autoaim since user is moving target point.
+            glc3DView.Invalidate()
+            glc3DView.Update()
+            blnManualMode = True
+        End If
+        lblTargetX.Text = hsbTargetX.Value
+        lblTargetY.Text = hsbTargetY.Value
+        lblTargetZ.Text = hsbTargetZ.Value
     End Sub
 
     Private Sub hsbSingleLayer_ValueChanged(sender As Object, e As EventArgs) Handles hsbSingleLayer.ValueChanged
@@ -1250,7 +1192,9 @@ Public Class frmMain
                 blnManualMode = True
             End If
             glc3DView.Invalidate()
+            glc3DView.Update()
         End If
+        lblDrawOne.Text = hsbSingleLayer.Value
     End Sub
 
     Private Sub hsbFrom_ValueChanged(sender As Object, e As EventArgs) Handles hsbFrom.ValueChanged
@@ -1270,7 +1214,9 @@ Public Class frmMain
             End If
 
             glc3DView.Invalidate()
+            glc3DView.Update()
         End If
+        lblDrawFrom.Text = hsbFrom.Value
     End Sub
 
     Private Sub hsbTo_ValueChanged(sender As Object, e As EventArgs) Handles hsbTo.ValueChanged
@@ -1288,6 +1234,109 @@ Public Class frmMain
             End If
 
             glc3DView.Invalidate()
+            glc3DView.Update()
+        End If
+        lblDrawTo.Text = hsbTo.Value
+    End Sub
+
+    Private Sub nudBacklashX_ValueChanged(sender As Object, e As EventArgs) Handles nudBacklashX.ValueChanged, nudBacklashY.ValueChanged, nudBacklashZ.ValueChanged
+        If (nudBacklashX.Value <> 0 Or nudBacklashY.Value <> 0 Or nudBacklashZ.Value <> 0) And blnManualMode Then
+            blnManualMode = False
+            ProcessVectors()
+            glc3DView.Invalidate()
+            glc3DView.Update()
+            btnCompensate.Enabled = True
+            blnManualMode = True
+        Else
+            btnCompensate.Enabled = False
+        End If
+    End Sub
+
+    Private Sub optColorSolid_CheckedChanged(sender As Object, e As EventArgs) Handles optColorSolid.CheckedChanged, optColorLayers.CheckedChanged, optColorRainbow.CheckedChanged
+        glc3DView.Invalidate()
+        glc3DView.Update()
+    End Sub
+
+    Private Sub optDrawAll_CheckedChanged(sender As Object, e As EventArgs) Handles optDrawAll.CheckedChanged
+        If optDrawAll.Checked Then
+            nend = myVectors    'Set start and end to all vectors
+            nstart = 1
+            lblPrompt.Text = "Drawing All Layers"
+
+            rtbInterpreted.SelectionLength = 0
+            rtbInterpreted.SelectionStart = 0
+
+            glc3DView.Invalidate()
+            glc3DView.Update()
+        End If
+    End Sub
+
+    Private Sub optDrawOne_CheckedChanged(sender As Object, e As EventArgs) Handles optDrawOne.CheckedChanged
+        If optDrawOne.Checked Then      'Reposition option button based on visibility
+            hsbSingleLayer.Visible = True
+            lblDrawOne.Visible = True
+            optDrawFromTo.Top = hsbSingleLayer.Bottom + (optDrawOne.Top - optDrawAll.Bottom)
+
+            hsbSingleLayer_ValueChanged(sender, e)
+
+            'nstart = hsbSingleLayer.Value
+            'nend = nstart
+            'lblPrompt.Text = "Layer = " & nstart
+            'glc3DView.Invalidate()
+        Else
+            hsbSingleLayer.Visible = False
+            lblDrawOne.Visible = False
+            optDrawFromTo.Top = optDrawOne.Bottom + (optDrawOne.Top - optDrawAll.Bottom)
+        End If
+    End Sub
+
+    Private Sub optDrawFromTo_CheckedChanged(sender As Object, e As EventArgs) Handles optDrawFromTo.CheckedChanged
+        If optDrawFromTo.Checked Then
+            hsbFrom.Visible = True
+            hsbTo.Visible = True
+            lblDrawFrom.Visible = True
+            lblDrawTo.Visible = True
+
+            hsbFrom.Top = optDrawFromTo.Bottom + (optDrawOne.Top - optDrawAll.Bottom)
+            hsbTo.Top = hsbFrom.Bottom + (optDrawOne.Top - optDrawAll.Bottom)
+            If blngCodeLoaded Then
+                nend = hsbTo.Value
+                nstart = hsbFrom.Value
+                If blnManualMode Then 'Modify selection in rtbInterpreted if this was manually adjusted.
+                    Dim charStart, charEnd As Integer
+                    blnManualMode = False
+                    charStart = rtbInterpreted.GetFirstCharIndexFromLine(hsbFrom.Value)
+                    charEnd = rtbInterpreted.GetFirstCharIndexFromLine(hsbTo.Value + 1) - 1
+                    rtbInterpreted.SelectionStart = charStart
+                    rtbInterpreted.SelectionLength = charEnd - rtbInterpreted.SelectionStart
+                    rtbInterpreted.Focus()
+                    blnManualMode = True
+                End If
+            End If
+            lblPrompt.Text = "Draw lines from : " & nstart & " to " & nend
+            glc3DView.Invalidate()
+            glc3DView.Update()
+        Else
+            hsbFrom.Visible = False
+            hsbTo.Visible = False
+            lblDrawFrom.Visible = False
+            lblDrawTo.Visible = False
+        End If
+    End Sub
+
+    Private Sub optSource_CheckedChanged(sender As Object, e As EventArgs) Handles optSource.CheckedChanged, optInterpreted.CheckedChanged, optCompensated.CheckedChanged
+        If optSource.Checked Then
+            rtbSource.Visible = True
+            rtbInterpreted.Visible = False
+            rtbCompensated.Visible = False
+        ElseIf optInterpreted.Checked Then
+            rtbSource.Visible = False
+            rtbInterpreted.Visible = True
+            rtbCompensated.Visible = False
+        Else
+            rtbSource.Visible = False
+            rtbInterpreted.Visible = False
+            rtbCompensated.Visible = True
         End If
     End Sub
 
@@ -1329,6 +1378,7 @@ Public Class frmMain
         lblPrompt.Text = "Line:" & mygLine & " Layer:" & mygCode(mygLine).Layer & "  -  " & lblPrompt.Text
 
         glc3DView.Invalidate()
+        glc3DView.Update()
 
         blnManualMode = True
     End Sub
@@ -1337,12 +1387,6 @@ Public Class frmMain
         If Not rtbInterpreted.Focused Then
             rtbInterpreted.Focus()
         End If
-    End Sub
-
-    Private Sub glc3DView_MouseClick(sender As Object, e As MouseEventArgs) Handles glc3DView.MouseClick
-        'xTrans += 1
-        'Debug.Print(xTrans)
-        glc3DView.Invalidate()
     End Sub
 
 #End Region
