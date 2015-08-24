@@ -104,8 +104,8 @@ Partial Class frmMain
         '
         'btnLoad
         '
-        Me.btnLoad.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.btnLoad.Location = New System.Drawing.Point(652, 574)
+        Me.btnLoad.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.btnLoad.Location = New System.Drawing.Point(12, 574)
         Me.btnLoad.Name = "btnLoad"
         Me.btnLoad.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.btnLoad.Size = New System.Drawing.Size(113, 23)
@@ -115,8 +115,11 @@ Partial Class frmMain
         '
         'rtbSource
         '
+        Me.rtbSource.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.rtbSource.Location = New System.Drawing.Point(15, 47)
         Me.rtbSource.Name = "rtbSource"
+        Me.rtbSource.ReadOnly = True
         Me.rtbSource.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.rtbSource.Size = New System.Drawing.Size(255, 511)
         Me.rtbSource.TabIndex = 1
@@ -126,11 +129,11 @@ Partial Class frmMain
         'btnOK
         '
         Me.btnOK.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.btnOK.Location = New System.Drawing.Point(920, 574)
+        Me.btnOK.Location = New System.Drawing.Point(933, 574)
         Me.btnOK.Name = "btnOK"
         Me.btnOK.Size = New System.Drawing.Size(75, 23)
         Me.btnOK.TabIndex = 2
-        Me.btnOK.Text = "OK"
+        Me.btnOK.Text = "Exit"
         Me.btnOK.UseVisualStyleBackColor = True
         '
         'btnInterpret
@@ -144,6 +147,7 @@ Partial Class frmMain
         Me.btnInterpret.TabIndex = 4
         Me.btnInterpret.Text = "Interpret g-Code"
         Me.btnInterpret.UseVisualStyleBackColor = True
+        Me.btnInterpret.Visible = False
         '
         'Label1
         '
@@ -164,6 +168,7 @@ Partial Class frmMain
             Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.rtbInterpreted.Location = New System.Drawing.Point(12, 47)
         Me.rtbInterpreted.Name = "rtbInterpreted"
+        Me.rtbInterpreted.ReadOnly = True
         Me.rtbInterpreted.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.rtbInterpreted.Size = New System.Drawing.Size(258, 511)
         Me.rtbInterpreted.TabIndex = 6
@@ -171,12 +176,13 @@ Partial Class frmMain
         '
         'lblPrompt
         '
-        Me.lblPrompt.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.lblPrompt.Anchor = CType(((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.lblPrompt.ForeColor = System.Drawing.Color.Blue
-        Me.lblPrompt.Location = New System.Drawing.Point(134, 574)
+        Me.lblPrompt.Location = New System.Drawing.Point(418, 574)
         Me.lblPrompt.Name = "lblPrompt"
         Me.lblPrompt.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.lblPrompt.Size = New System.Drawing.Size(512, 23)
+        Me.lblPrompt.Size = New System.Drawing.Size(347, 23)
         Me.lblPrompt.TabIndex = 8
         Me.lblPrompt.Text = "Load a file containing G-code to begin."
         Me.lblPrompt.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
@@ -253,6 +259,7 @@ Partial Class frmMain
         Me.btnDebug.TabIndex = 12
         Me.btnDebug.Text = "Debug"
         Me.btnDebug.UseVisualStyleBackColor = True
+        Me.btnDebug.Visible = False
         '
         'optDrawAll
         '
@@ -483,6 +490,7 @@ Partial Class frmMain
         Me.nudBacklashX.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.nudBacklashX.DecimalPlaces = 3
+        Me.nudBacklashX.ForeColor = System.Drawing.Color.Red
         Me.nudBacklashX.Increment = New Decimal(New Integer() {1, 0, 0, 65536})
         Me.nudBacklashX.Location = New System.Drawing.Point(44, 42)
         Me.nudBacklashX.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
@@ -497,6 +505,7 @@ Partial Class frmMain
         Me.nudBacklashY.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.nudBacklashY.DecimalPlaces = 3
+        Me.nudBacklashY.ForeColor = System.Drawing.Color.Green
         Me.nudBacklashY.Increment = New Decimal(New Integer() {1, 0, 0, 65536})
         Me.nudBacklashY.Location = New System.Drawing.Point(44, 62)
         Me.nudBacklashY.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
@@ -511,6 +520,7 @@ Partial Class frmMain
         Me.nudBacklashZ.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.nudBacklashZ.DecimalPlaces = 3
+        Me.nudBacklashZ.ForeColor = System.Drawing.Color.Blue
         Me.nudBacklashZ.Increment = New Decimal(New Integer() {1, 0, 0, 65536})
         Me.nudBacklashZ.Location = New System.Drawing.Point(44, 82)
         Me.nudBacklashZ.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
@@ -722,7 +732,7 @@ Partial Class frmMain
         'Label3
         '
         Me.Label3.ForeColor = System.Drawing.Color.SlateGray
-        Me.Label3.Location = New System.Drawing.Point(284, 23)
+        Me.Label3.Location = New System.Drawing.Point(284, 20)
         Me.Label3.Name = "Label3"
         Me.Label3.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.Label3.Size = New System.Drawing.Size(388, 23)
@@ -744,9 +754,9 @@ Partial Class frmMain
         '
         'btnSaveCode
         '
-        Me.btnSaveCode.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.btnSaveCode.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.btnSaveCode.Enabled = False
-        Me.btnSaveCode.Location = New System.Drawing.Point(781, 574)
+        Me.btnSaveCode.Location = New System.Drawing.Point(287, 574)
         Me.btnSaveCode.Name = "btnSaveCode"
         Me.btnSaveCode.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.btnSaveCode.Size = New System.Drawing.Size(113, 23)
@@ -760,6 +770,7 @@ Partial Class frmMain
             Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.rtbCompensated.Location = New System.Drawing.Point(12, 46)
         Me.rtbCompensated.Name = "rtbCompensated"
+        Me.rtbCompensated.ReadOnly = True
         Me.rtbCompensated.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.rtbCompensated.Size = New System.Drawing.Size(258, 511)
         Me.rtbCompensated.TabIndex = 31
@@ -817,7 +828,7 @@ Partial Class frmMain
         '
         Me.btnCompensate.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.btnCompensate.Enabled = False
-        Me.btnCompensate.Location = New System.Drawing.Point(12, 574)
+        Me.btnCompensate.Location = New System.Drawing.Point(154, 574)
         Me.btnCompensate.Name = "btnCompensate"
         Me.btnCompensate.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.btnCompensate.Size = New System.Drawing.Size(116, 23)
@@ -829,7 +840,7 @@ Partial Class frmMain
         '
         Me.lblCameraX.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.lblCameraX.AutoSize = True
-        Me.lblCameraX.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblCameraX.ForeColor = System.Drawing.Color.Red
         Me.lblCameraX.Location = New System.Drawing.Point(978, 80)
         Me.lblCameraX.Name = "lblCameraX"
         Me.lblCameraX.RightToLeft = System.Windows.Forms.RightToLeft.No
@@ -842,7 +853,7 @@ Partial Class frmMain
         '
         Me.lblCameraY.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.lblCameraY.AutoSize = True
-        Me.lblCameraY.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblCameraY.ForeColor = System.Drawing.Color.Green
         Me.lblCameraY.Location = New System.Drawing.Point(978, 102)
         Me.lblCameraY.Name = "lblCameraY"
         Me.lblCameraY.RightToLeft = System.Windows.Forms.RightToLeft.No
@@ -855,7 +866,7 @@ Partial Class frmMain
         '
         Me.lblCameraZ.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.lblCameraZ.AutoSize = True
-        Me.lblCameraZ.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblCameraZ.ForeColor = System.Drawing.Color.Blue
         Me.lblCameraZ.Location = New System.Drawing.Point(978, 124)
         Me.lblCameraZ.Name = "lblCameraZ"
         Me.lblCameraZ.RightToLeft = System.Windows.Forms.RightToLeft.No
@@ -881,7 +892,7 @@ Partial Class frmMain
         '
         Me.lblTargetX.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.lblTargetX.AutoSize = True
-        Me.lblTargetX.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblTargetX.ForeColor = System.Drawing.Color.Red
         Me.lblTargetX.Location = New System.Drawing.Point(978, 201)
         Me.lblTargetX.Name = "lblTargetX"
         Me.lblTargetX.RightToLeft = System.Windows.Forms.RightToLeft.No
@@ -894,7 +905,7 @@ Partial Class frmMain
         '
         Me.lblTargetY.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.lblTargetY.AutoSize = True
-        Me.lblTargetY.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblTargetY.ForeColor = System.Drawing.Color.Green
         Me.lblTargetY.Location = New System.Drawing.Point(978, 223)
         Me.lblTargetY.Name = "lblTargetY"
         Me.lblTargetY.RightToLeft = System.Windows.Forms.RightToLeft.No
@@ -907,7 +918,7 @@ Partial Class frmMain
         '
         Me.lblTargetZ.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.lblTargetZ.AutoSize = True
-        Me.lblTargetZ.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblTargetZ.ForeColor = System.Drawing.Color.Blue
         Me.lblTargetZ.Location = New System.Drawing.Point(978, 245)
         Me.lblTargetZ.Name = "lblTargetZ"
         Me.lblTargetZ.RightToLeft = System.Windows.Forms.RightToLeft.No
@@ -966,6 +977,7 @@ Partial Class frmMain
         Me.Name = "frmMain"
         Me.RightToLeft = System.Windows.Forms.RightToLeft.Yes
         Me.Text = "G-Code 3D Print Analyzer"
+        Me.WindowState = System.Windows.Forms.FormWindowState.Maximized
         CType(Me.nudBacklashX, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.nudBacklashY, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.nudBacklashZ, System.ComponentModel.ISupportInitialize).EndInit()
