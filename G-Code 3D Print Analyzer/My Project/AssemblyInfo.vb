@@ -8,10 +8,10 @@ Imports System.Runtime.InteropServices
 
 ' Review the values of the assembly attributes
 
-<Assembly: AssemblyTitle("WindowsApplication1")>
-<Assembly: AssemblyDescription("")>
-<Assembly: AssemblyCompany("")>
-<Assembly: AssemblyProduct("WindowsApplication1")>
+<Assembly: AssemblyTitle("G-Code 3D Print Analyzer")>
+<Assembly: AssemblyDescription("Program to analyze G-Code and how a 3D Printer will print with backlash")>
+<Assembly: AssemblyCompany("KJB Productions")>
+<Assembly: AssemblyProduct("KJB Print Analyzer")>
 <Assembly: AssemblyCopyright("Copyright ©  2015")>
 <Assembly: AssemblyTrademark("")>
 

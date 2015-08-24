@@ -97,7 +97,7 @@ Public Class frmMain
         Dim linenum As Integer = 1
         Dim myline As String
         Dim Curlocation As Integer = 0    'Current location in the textbox
-        Dim newline, strToken() As String
+        Dim newline, strToken(), tmpText As String
 
         rtbInterpreted.Clear()  'Clear the interpreted RichTextBox
 
@@ -114,17 +114,22 @@ Public Class frmMain
                 Curlocation += .Length
 
                 If .Text = "" Or Strings.Left(.Text, 1) = ";" Then     'Remark or empty line
-                    .Color = Color.LightGray
                     .Token = ";"
                 Else
-                    strToken = Strings.Split(.Text, " ", 2)     'Return token in 1st in array, remainder in 2nd, onwards
+                    'Remove remarks from the line
+                    tmpText = Trim(.Text)
+                    If tmpText.Contains(";") Then
+                        tmpText = Trim(Strings.Left(.Text, InStr(.Text, ";") - 1))
+                    End If
+                    strToken = Strings.Split(tmpText, " ", 2)     'Return token in 1st in array, remainder in 2nd, onwards
                     .Token = strToken(0)
                     If strToken.Length > 1 Then
                         .Params = strToken(1)
+                    Else
+                        .Params = ""
                     End If
-                    .Color = mygColor(.Token)
-
                 End If
+                .Color = mygColor(.Token)
 
             End With
 
@@ -186,7 +191,7 @@ Public Class frmMain
                                     .F = Mid(strToken(j), 2)
                                 Case ""    'Ignore this
                                 Case Else
-                                    MessageBox.Show("Error token: " & Strings.Left(strToken(j), 1) & " on line " & i)
+                                    MessageBox.Show("G0/1 Error token: " & Strings.Left(strToken(j), 1) & " on line " & i)
                             End Select
                         Next
                         If .E >= 0 And (.X <> -999 Or .Y <> -999 Or .Z <> -999) Then
@@ -215,7 +220,7 @@ Public Class frmMain
                                 Case "F"
                                     .F = Mid(strToken(j), 2)
                                 Case Else
-                                    MessageBox.Show("Error token: " & Strings.Left(strToken(j), 1))
+                                    MessageBox.Show("G92 Error token: " & Strings.Left(strToken(j), 1) & " on line " & i)
                             End Select
                         Next
                 End Select
@@ -491,7 +496,7 @@ Public Class frmMain
                         'Non-backlash gcode
                         sbline.Append(.Text & ControlChars.Lf)
                     Case Else
-                        Debug.Print(i & " :  " & mygCode(i).Text)
+                        'Debug.Print(i & " :  " & mygCode(i).Text)
                 End Select
             End With
         Next
@@ -504,7 +509,7 @@ Public Class frmMain
 
     Private Function mygColor(myToken As String) As Color
         'Return the color code for the token
-        Dim cMove, cMajor, cTemp, cUnknown, cCommand As Color
+        Dim cMove, cMajor, cTemp, cUnknown, cCommand, cComment As Color
 
         'Set default colors
         cMove = Color.Green
@@ -512,8 +517,11 @@ Public Class frmMain
         cTemp = Color.Red
         cUnknown = Color.Yellow
         cCommand = Color.Fuchsia
+        cComment = Color.Black
 
         Select Case myToken
+            Case ";"
+                mygColor = cComment
             Case "T0"   'Select Tool 0"
                 mygColor = cCommand
             Case "G1", "G0"   'Move X, Y, Z, E
@@ -738,18 +746,51 @@ Public Class frmMain
     End Sub
 
     Private Sub DrawAxes()
-        'Draw X, Y, Z Axis
+        Dim nEnd As Integer = 150
+        Dim nGrid As Integer = 10
+
+        'Draw X, Y, Z Axis. Cube
         GL.Begin(BeginMode.Lines)
         'Face 1
         GL.Color3(Color.Red)
         GL.Vertex3(0, 0, 0)
-        GL.Vertex3(1000, 0, 0)
+        GL.Vertex3(nEnd, 0, 0)
         GL.Color3(Color.Green)
         GL.Vertex3(0, 0, 0)
-        GL.Vertex3(0, 1000, 0)
+        GL.Vertex3(0, nEnd, 0)
         GL.Color3(Color.Blue)
         GL.Vertex3(0, 0, 0)
-        GL.Vertex3(0, 0, 1000)
+        GL.Vertex3(0, 0, nEnd)
+        'Draw Verticals
+        GL.Color3(Color.DarkBlue)
+        GL.Vertex3(nEnd, 0, 0)
+        GL.Vertex3(nEnd, 0, nEnd)
+        GL.Vertex3(0, nEnd, 0)
+        GL.Vertex3(0, nEnd, nEnd)
+        GL.Vertex3(nEnd, nEnd, 0)
+        GL.Vertex3(nEnd, nEnd, nEnd)
+        'Draw Top Plane
+        GL.Color3(Color.DarkRed)
+        GL.Vertex3(0, 0, nEnd)
+        GL.Vertex3(nEnd, 0, nEnd)
+        GL.Vertex3(0, nEnd, nEnd)
+        GL.Vertex3(nEnd, nEnd, nEnd)
+        GL.Color3(Color.DarkGreen)
+        GL.Vertex3(0, 0, nEnd)
+        GL.Vertex3(0, nEnd, nEnd)
+        GL.Vertex3(nEnd, 0, nEnd)
+        GL.Vertex3(nEnd, nEnd, nEnd)
+
+        'Draw Horizontal and Vertical Grid on Ground plane
+        For x = nGrid To nEnd Step nGrid
+            GL.Color3(Color.DarkRed)
+            GL.Vertex3(0, x, 0)
+            GL.Vertex3(nEnd, x, 0)
+            GL.Color3(Color.DarkGreen)
+            GL.Vertex3(x, 0, 0)
+            GL.Vertex3(x, nEnd, 0)
+        Next
+
         GL.End()
 
     End Sub
@@ -858,8 +899,8 @@ Public Class frmMain
             btnInterpret.Enabled = True
             optSource.Enabled = True
             optInterpreted.Enabled = True
-            optCompensated.Enabled = True
-            btnSaveCode.Enabled = True
+            'optCompensated.Enabled = True
+            'btnSaveCode.Enabled = True
             blngCodeLoaded = True
             tmpcolor = lblPrompt.ForeColor
             lblPrompt.ForeColor = Color.Red
@@ -877,7 +918,6 @@ Public Class frmMain
 
     Private Sub btnSaveCode_Click(sender As Object, e As EventArgs) Handles btnSaveCode.Click
         'Save backlash compensated gCode
-        Dim tmpcolor As Color
 
         sfdgCompensated.InitialDirectory = ofdgCodeFile.InitialDirectory
         sfdgCompensated.Filter = ofdgCodeFile.Filter     ' "gcode files (*.gcode)|*.gcode|All files (*.*)|*.*"
@@ -1274,9 +1314,13 @@ Public Class frmMain
             glc3DView.Invalidate()
             glc3DView.Update()
             btnCompensate.Enabled = True
+            optCompensated.Enabled = True
+            btnSaveCode.Enabled = True
             blnManualMode = True
         Else
             btnCompensate.Enabled = False
+            optCompensated.Enabled = False
+            btnSaveCode.Enabled = False
         End If
     End Sub
 
