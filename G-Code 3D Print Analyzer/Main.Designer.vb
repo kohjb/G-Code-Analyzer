@@ -89,6 +89,7 @@ Partial Class frmMain
         Me.lblTargetX = New System.Windows.Forms.Label()
         Me.lblTargetY = New System.Windows.Forms.Label()
         Me.lblTargetZ = New System.Windows.Forms.Label()
+        Me.chbThickLines = New System.Windows.Forms.CheckBox()
         CType(Me.nudBacklashX, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashY, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashZ, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -554,6 +555,7 @@ Partial Class frmMain
         Me.GroupBox1.Controls.Add(Me.optDrawAll)
         Me.GroupBox1.Controls.Add(Me.hsbSingleLayer)
         Me.GroupBox1.Controls.Add(Me.lblDrawOne)
+        Me.GroupBox1.Controls.Add(Me.chbThickLines)
         Me.GroupBox1.Controls.Add(Me.lblDrawFrom)
         Me.GroupBox1.Controls.Add(Me.lblDrawTo)
         Me.GroupBox1.Location = New System.Drawing.Point(781, 403)
@@ -916,6 +918,18 @@ Partial Class frmMain
         Me.lblTargetZ.Text = "100"
         Me.lblTargetZ.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
+        'chbThickLines
+        '
+        Me.chbThickLines.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.chbThickLines.AutoSize = True
+        Me.chbThickLines.Location = New System.Drawing.Point(131, 19)
+        Me.chbThickLines.Name = "chbThickLines"
+        Me.chbThickLines.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.chbThickLines.Size = New System.Drawing.Size(81, 17)
+        Me.chbThickLines.TabIndex = 22
+        Me.chbThickLines.Text = "Thick Lines"
+        Me.chbThickLines.UseVisualStyleBackColor = True
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -1049,4 +1063,5 @@ Partial Class frmMain
     Friend WithEvents lblDrawOne As Label
     Friend WithEvents lblDrawFrom As Label
     Friend WithEvents lblDrawTo As Label
+    Friend WithEvents chbThickLines As CheckBox
 End Class

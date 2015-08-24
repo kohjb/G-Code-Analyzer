@@ -604,6 +604,7 @@ Public Class frmMain
 
     Private Sub DrawVectors()
         'Read the vectors and draw logical or physical lines as needed
+        'Also draw vectors as thick lines with volume or just lines
 
         Dim pt1, pt2 As Vector3
         Dim zcolor1, zcolor2 As Color
@@ -657,7 +658,11 @@ Public Class frmMain
 
                 'zcolor = Color.FromArgb(RGB(CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd()))))
 
-                DrawLine(pt1, pt2, zcolor1, zcolor2)
+                If chbThickLines.Checked Then
+                    DrawCylinder(pt1, pt2, 1, 1, zcolor1, zcolor2, 16)
+                Else
+                    DrawLine(pt1, pt2, zcolor1, zcolor2)
+                End If
                 If chbSlow.Checked Then     'Slow down the animation by pausing
                     'System.Threading.Thread.Sleep(100)
                     glc3DView.SwapBuffers()
@@ -677,6 +682,48 @@ Public Class frmMain
         Next
         'lblPrompt.ForeColor = Color.Blue
         'lblPrompt.Text = "Ready."
+    End Sub
+
+    Private Sub DrawCylinder(Pt1 As Vector3, Pt2 As Vector3, r1 As Single, r2 As Single, c1 As Color, c2 As Color, ns As Integer)
+        'Draw cylinder from Pt1 to Pt2 with radius beginning with r1 to r2, and color c1 to c2, ns segments
+
+        Dim theta As Double
+        Dim vertices As New List(Of Vector3)
+        Dim h As Single = 10
+
+        For y = 0 To 1
+            For x = 0 To ns - 1
+                theta = (x / (ns - 1) * 2 * Math.PI)
+                vertices.Add(New Vector3(r1 * Math.Cos(theta), h * y, r1 * Math.Sin(theta)))
+            Next
+        Next
+
+        Dim indices As New List(Of Integer)
+        For x = 0 To ns - 2
+            indices.Add(x)
+            indices.Add(x + ns)
+            indices.Add(x + ns + 1)
+
+            indices.Add(x + ns + 1)
+            indices.Add(x + 1)
+            indices.Add(x)
+        Next
+
+        GL.Begin(BeginMode.Triangles)
+        For Each i In indices
+            GL.Vertex3(vertices(i))
+        Next
+        GL.End()
+
+        'Determine normal
+
+
+        'Determine length
+        'Vector3.Length(Pt1, Pt2)
+
+        'Draw cylinder vertically first, then transform to correct position
+
+        'Delete buffers to clean up
     End Sub
 
     Private Sub DrawLine(Pt1 As Vector3, Pt2 As Vector3, c1 As Color, c2 As Color)
@@ -892,7 +939,7 @@ Public Class frmMain
         glc3DView.Update()
     End Sub
 
-    Private Sub chbAutotgt_CheckedChanged(sender As Object, e As EventArgs) Handles chbAutotgt.CheckedChanged
+    Private Sub chbAutotgt_CheckedChanged(sender As Object, e As EventArgs) Handles chbAutotgt.CheckedChanged, chbThickLines.CheckedChanged
         If blnManualMode Then
             If chbAutotgt.Checked Then
                 blnManualMode = False
