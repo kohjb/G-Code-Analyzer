@@ -667,7 +667,8 @@ Public Class frmMain
                 'zcolor = Color.FromArgb(RGB(CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd()))))
 
                 If chbThickLines.Checked Then
-                    DrawCylinder(pt1, pt2, 1, 1, zcolor1, zcolor2, 16)
+                    'DrawCylinder(New Vector3(63.025, 70.614, 0), New Vector3(63.87, 71.168, 0), .1, .1, zcolor1, zcolor2, 16)
+                    DrawCylinder(pt1, pt2, 0.1, 0.1, zcolor1, zcolor2, 16)
                 Else
                     DrawLine(pt1, pt2, zcolor1, zcolor2)
                 End If
@@ -697,12 +698,39 @@ Public Class frmMain
 
         Dim theta As Double
         Dim vertices As New List(Of Vector3)
-        Dim h As Single = 10
+        Dim x, y, z As Single
+        Dim tx, rx, ry, rz As Matrix4
+        Dim px, vt As Vector3
+        Dim h, ax, ay, az As Single
 
-        For y = 0 To 1
-            For x = 0 To ns - 1
-                theta = (x / (ns - 1) * 2 * Math.PI)
-                vertices.Add(New Vector3(r1 * Math.Cos(theta), h * y, r1 * Math.Sin(theta)))
+        px = Vector3.Subtract(Pt2, Pt1)
+        h = px.Length
+        ax = Vector3.CalculateAngle(New Vector3(0, 0, h), New Vector3(0, px.Y, px.Z))
+        ay = Vector3.CalculateAngle(New Vector3(0, 0, h), New Vector3(px.X, 0, px.Z))
+        az = Vector3.CalculateAngle(New Vector3(0, 100, 0), New Vector3(px.X, px.Y, 0))
+
+        For l = 0 To 1
+            For s = 0 To ns - 1
+                theta = (s / (ns - 1) * 2 * Math.PI)
+                x = r1 * Math.Cos(theta)
+                y = r1 * Math.Sin(theta)
+                z = h * l
+                vt = New Vector3(x, y, z)
+
+                'Rotate around x
+                rx = Matrix4.CreateRotationX(-ax)
+                vt = Vector3.Transform(vt, rx)
+                'Rotate around y
+                ry = Matrix4.CreateRotationY(ay)
+                vt = Vector3.Transform(vt, ry)
+                'Rotate around z
+                rz = Matrix4.CreateRotationZ(-az)
+                vt = Vector3.Transform(vt, rz)
+                'Translate to final position
+                tx = Matrix4.CreateTranslation(Pt1)
+                vt = Vector3.Transform(vt, tx)
+
+                vertices.Add(vt)
             Next
         Next
 
@@ -1040,9 +1068,9 @@ Public Class frmMain
                     Dim RotateZ, TranslateTgt, TranslateOrg As Matrix4
                     Sensitivity = -1
                     dTheta = dTheta * Sensitivity * Math.PI / 180
-                    RotateZ = New Matrix4(Math.Cos(dTheta), Math.Sin(dTheta), 0, 0, -Math.Sin(dTheta), Math.Cos(dTheta), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
-                    TranslateTgt = New Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -TargetPos.X, -TargetPos.Y, -TargetPos.Z, 1)
-                    TranslateOrg = New Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, TargetPos.X, TargetPos.Y, TargetPos.Z, 1)
+                    RotateZ = Matrix4.CreateRotationZ(dTheta)
+                    TranslateTgt = Matrix4.CreateTranslation(-TargetPos.X, -TargetPos.Y, -TargetPos.Z)
+                    TranslateOrg = Matrix4.CreateTranslation(TargetPos.X, TargetPos.Y, TargetPos.Z)
                     'Translate World to Target as origin, then rotate Camera about Z, then Translate World back to Target.
                     CameraPos = Vector4.Transform(CameraPos, TranslateTgt)
                     CameraPos = Vector4.Transform(CameraPos, RotateZ)
@@ -1094,7 +1122,7 @@ Public Class frmMain
                 LastPoint = EndPoint
 
             ElseIf isLeftButton Then    'Pan camera left right up down
-                Dim dTheta, Theta, ThetaZ, dX, dY, dZ, dR, dRz As Single
+                Dim dTheta, Theta, ThetaZ, dX, dY, dZ, dR, dRz As Double
                 Dim blnDraw As Boolean = False
                 Dim EndPoint As Point = glc3DView.PointToScreen(New Point(e.X, e.Y))
                 Dim Sensitivity As Single     'The number of degrees to move with each mouse move
@@ -1105,7 +1133,7 @@ Public Class frmMain
                 'Amount of X movement = amount of degrees of rotation in horizontal plane
                 dTheta = EndPoint.X - StartPoint.X
                 If dTheta <> 0 Then
-                    Sensitivity = 0.2
+                    Sensitivity = 0.02
                     'Get vector from camera to target
                     dX = TargetPos.X - CameraPos.X
                     dY = TargetPos.Y - CameraPos.Y
@@ -1130,7 +1158,7 @@ Public Class frmMain
                 'Amount of Y movement = amount of degrees of rotation in vertical plane
                 dTheta = EndPoint.Y - StartPoint.Y
                 If dTheta <> 0 Then
-                    Sensitivity = 0.2
+                    Sensitivity = 0.02
                     dX = TargetPos.X - CameraPos.X
                     dY = TargetPos.Y - CameraPos.Y
                     dZ = TargetPos.Z - CameraPos.Z
