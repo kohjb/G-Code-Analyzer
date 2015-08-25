@@ -667,8 +667,9 @@ Public Class frmMain
                 'zcolor = Color.FromArgb(RGB(CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd()))))
 
                 If chbThickLines.Checked Then
-                    'DrawCylinder(New Vector3(63.025, 70.614, 0), New Vector3(63.87, 71.168, 0), .1, .1, zcolor1, zcolor2, 16)
-                    DrawCylinder(pt1, pt2, 0.1, 0.1, zcolor1, zcolor2, 16)
+                    'DrawCylinder(New Vector3(10, 30, 10), New Vector3(20, 20, 20), 0.1, 0.1, zcolor1, zcolor2, 16)
+                    'DrawCylinder(New Vector3(83.799, 77.859, 0), New Vector3(72.141, 66.202, 0), 0.1, 0.1, zcolor1, zcolor2, 16)
+                    DrawCylinder(pt1, pt2, 0.2, 0.1, zcolor1, zcolor2, 16)
                 Else
                     DrawLine(pt1, pt2, zcolor1, zcolor2)
                 End If
@@ -695,39 +696,41 @@ Public Class frmMain
 
     Private Sub DrawCylinder(Pt1 As Vector3, Pt2 As Vector3, r1 As Single, r2 As Single, c1 As Color, c2 As Color, ns As Integer)
         'Draw cylinder from Pt1 to Pt2 with radius beginning with r1 to r2, and color c1 to c2, ns segments
+        'Start by creating a vertical cylinder located at Z. Then rotate the cylinder by rotating in Y, then X to align with P1-P2, then translating to P1
 
         Dim theta As Double
         Dim vertices As New List(Of Vector3)
-        Dim x, y, z As Single
+        Dim x, y, z, d As Single
         Dim tx, rx, ry, rz As Matrix4
-        Dim px, vt As Vector3
+        Dim px, ux, vt As Vector3
         Dim h, ax, ay, az As Single
 
-        px = Vector3.Subtract(Pt2, Pt1)
-        h = px.Length
-        ax = Vector3.CalculateAngle(New Vector3(0, 0, h), New Vector3(0, px.Y, px.Z))
-        ay = Vector3.CalculateAngle(New Vector3(0, 0, h), New Vector3(px.X, 0, px.Z))
-        az = Vector3.CalculateAngle(New Vector3(0, 100, 0), New Vector3(px.X, px.Y, 0))
+        px = Vector3.Subtract(Pt2, Pt1)     'Create Vector of the From - To points
+        h = px.Length                       'Length of the Vector
+        ux = px.Normalized                  'Create Unit Vector of From-To
+        d = Math.Sqrt(ux.Y ^ 2 + ux.Z ^ 2)  'Get the hypoteneuse of the unit vector projected on the YZ plane
+        ry = New Matrix4(d, 0, -ux.X, 0, 0, 1, 0, 0, ux.X, 0, d, 0, 0, 0, 0, 1) 'Create the Y rotation Matrix
+        rx = New Matrix4(1, 0, 0, 0, 0, ux.Z / d, -ux.Y / d, 0, 0, ux.Y / d, ux.Z / d, 0, 0, 0, 0, 1) 'Create the X rotation matrix
+        tx = Matrix4.CreateTranslation(Pt1)     'Create the Translation back to proper location
 
         For l = 0 To 1
             For s = 0 To ns - 1
                 theta = (s / (ns - 1) * 2 * Math.PI)
-                x = r1 * Math.Cos(theta)
-                y = r1 * Math.Sin(theta)
+                x = (r1 * (1 - l) + r2 * l) * Math.Cos(theta)   'Choose r1 or r2 depending on layer
+                y = (r1 * (1 - l) + r2 * l) * Math.Sin(theta)
                 z = h * l
                 vt = New Vector3(x, y, z)
 
-                'Rotate around x
-                rx = Matrix4.CreateRotationX(-ax)
-                vt = Vector3.Transform(vt, rx)
+                'Rotate around z - Not needed since we have a cylinder.
+                'vt = Vector3.Transform(vt, rz)
+
                 'Rotate around y
-                ry = Matrix4.CreateRotationY(ay)
                 vt = Vector3.Transform(vt, ry)
-                'Rotate around z
-                rz = Matrix4.CreateRotationZ(-az)
-                vt = Vector3.Transform(vt, rz)
+
+                'Rotate around x
+                vt = Vector3.Transform(vt, rx)
+
                 'Translate to final position
-                tx = Matrix4.CreateTranslation(Pt1)
                 vt = Vector3.Transform(vt, tx)
 
                 vertices.Add(vt)
@@ -747,6 +750,7 @@ Public Class frmMain
 
         GL.Begin(BeginMode.Triangles)
         For Each i In indices
+            GL.Color3(c1)
             GL.Vertex3(vertices(i))
         Next
         GL.End()
@@ -1133,7 +1137,7 @@ Public Class frmMain
                 'Amount of X movement = amount of degrees of rotation in horizontal plane
                 dTheta = EndPoint.X - StartPoint.X
                 If dTheta <> 0 Then
-                    Sensitivity = 0.02
+                    Sensitivity = 0.18 / 59 * hsbCameraZoom.Value + 0.0169
                     'Get vector from camera to target
                     dX = TargetPos.X - CameraPos.X
                     dY = TargetPos.Y - CameraPos.Y
@@ -1158,7 +1162,7 @@ Public Class frmMain
                 'Amount of Y movement = amount of degrees of rotation in vertical plane
                 dTheta = EndPoint.Y - StartPoint.Y
                 If dTheta <> 0 Then
-                    Sensitivity = 0.02
+                    Sensitivity = 0.18 / 59 * hsbCameraZoom.Value + 0.0169
                     dX = TargetPos.X - CameraPos.X
                     dY = TargetPos.Y - CameraPos.Y
                     dZ = TargetPos.Z - CameraPos.Z
