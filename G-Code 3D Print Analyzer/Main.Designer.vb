@@ -67,6 +67,8 @@ Partial Class frmMain
         Me.lblDrawOne = New System.Windows.Forms.Label()
         Me.lblDrawFrom = New System.Windows.Forms.Label()
         Me.lblDrawTo = New System.Windows.Forms.Label()
+        Me.chbConical = New System.Windows.Forms.CheckBox()
+        Me.chbThickLines = New System.Windows.Forms.CheckBox()
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
         Me.chbSlow = New System.Windows.Forms.CheckBox()
         Me.optColorRainbow = New System.Windows.Forms.RadioButton()
@@ -89,7 +91,15 @@ Partial Class frmMain
         Me.lblTargetX = New System.Windows.Forms.Label()
         Me.lblTargetY = New System.Windows.Forms.Label()
         Me.lblTargetZ = New System.Windows.Forms.Label()
-        Me.chbThickLines = New System.Windows.Forms.CheckBox()
+        Me.GroupBox5 = New System.Windows.Forms.GroupBox()
+        Me.chbTransparent = New System.Windows.Forms.CheckBox()
+        Me.Label16 = New System.Windows.Forms.Label()
+        Me.hsbFilament = New System.Windows.Forms.HScrollBar()
+        Me.lblFilament = New System.Windows.Forms.Label()
+        Me.Label12 = New System.Windows.Forms.Label()
+        Me.hsbNozzle = New System.Windows.Forms.HScrollBar()
+        Me.lblNozzle = New System.Windows.Forms.Label()
+        Me.chbSimFlow = New System.Windows.Forms.CheckBox()
         CType(Me.nudBacklashX, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashY, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashZ, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -97,6 +107,7 @@ Partial Class frmMain
         Me.GroupBox2.SuspendLayout()
         Me.GroupBox3.SuspendLayout()
         Me.GroupBox4.SuspendLayout()
+        Me.GroupBox5.SuspendLayout()
         Me.SuspendLayout()
         '
         'ofdgCodeFile
@@ -106,7 +117,7 @@ Partial Class frmMain
         'btnLoad
         '
         Me.btnLoad.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnLoad.Location = New System.Drawing.Point(12, 574)
+        Me.btnLoad.Location = New System.Drawing.Point(12, 709)
         Me.btnLoad.Name = "btnLoad"
         Me.btnLoad.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.btnLoad.Size = New System.Drawing.Size(113, 23)
@@ -122,7 +133,7 @@ Partial Class frmMain
         Me.rtbSource.Name = "rtbSource"
         Me.rtbSource.ReadOnly = True
         Me.rtbSource.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.rtbSource.Size = New System.Drawing.Size(255, 511)
+        Me.rtbSource.Size = New System.Drawing.Size(255, 646)
         Me.rtbSource.TabIndex = 1
         Me.rtbSource.Text = ""
         Me.rtbSource.Visible = False
@@ -130,7 +141,7 @@ Partial Class frmMain
         'btnOK
         '
         Me.btnOK.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.btnOK.Location = New System.Drawing.Point(933, 574)
+        Me.btnOK.Location = New System.Drawing.Point(933, 709)
         Me.btnOK.Name = "btnOK"
         Me.btnOK.Size = New System.Drawing.Size(75, 23)
         Me.btnOK.TabIndex = 2
@@ -171,7 +182,7 @@ Partial Class frmMain
         Me.rtbInterpreted.Name = "rtbInterpreted"
         Me.rtbInterpreted.ReadOnly = True
         Me.rtbInterpreted.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.rtbInterpreted.Size = New System.Drawing.Size(258, 511)
+        Me.rtbInterpreted.Size = New System.Drawing.Size(258, 646)
         Me.rtbInterpreted.TabIndex = 6
         Me.rtbInterpreted.Text = ""
         '
@@ -180,7 +191,7 @@ Partial Class frmMain
         Me.lblPrompt.Anchor = CType(((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.lblPrompt.ForeColor = System.Drawing.Color.Blue
-        Me.lblPrompt.Location = New System.Drawing.Point(418, 574)
+        Me.lblPrompt.Location = New System.Drawing.Point(418, 709)
         Me.lblPrompt.Name = "lblPrompt"
         Me.lblPrompt.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.lblPrompt.Size = New System.Drawing.Size(347, 23)
@@ -200,7 +211,7 @@ Partial Class frmMain
         Me.glc3DView.Margin = New System.Windows.Forms.Padding(4)
         Me.glc3DView.Name = "glc3DView"
         Me.glc3DView.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.glc3DView.Size = New System.Drawing.Size(480, 510)
+        Me.glc3DView.Size = New System.Drawing.Size(480, 645)
         Me.glc3DView.TabIndex = 9
         Me.glc3DView.VSync = False
         '
@@ -565,7 +576,6 @@ Partial Class frmMain
         Me.GroupBox1.Controls.Add(Me.optDrawAll)
         Me.GroupBox1.Controls.Add(Me.hsbSingleLayer)
         Me.GroupBox1.Controls.Add(Me.lblDrawOne)
-        Me.GroupBox1.Controls.Add(Me.chbThickLines)
         Me.GroupBox1.Controls.Add(Me.lblDrawFrom)
         Me.GroupBox1.Controls.Add(Me.lblDrawTo)
         Me.GroupBox1.Location = New System.Drawing.Point(781, 403)
@@ -663,6 +673,33 @@ Partial Class frmMain
         Me.lblDrawTo.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         Me.lblDrawTo.Visible = False
         '
+        'chbConical
+        '
+        Me.chbConical.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.chbConical.AutoSize = True
+        Me.chbConical.Checked = True
+        Me.chbConical.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chbConical.Enabled = False
+        Me.chbConical.Location = New System.Drawing.Point(11, 43)
+        Me.chbConical.Name = "chbConical"
+        Me.chbConical.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.chbConical.Size = New System.Drawing.Size(61, 17)
+        Me.chbConical.TabIndex = 22
+        Me.chbConical.Text = "Conical"
+        Me.chbConical.UseVisualStyleBackColor = True
+        '
+        'chbThickLines
+        '
+        Me.chbThickLines.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.chbThickLines.AutoSize = True
+        Me.chbThickLines.Location = New System.Drawing.Point(11, 19)
+        Me.chbThickLines.Name = "chbThickLines"
+        Me.chbThickLines.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.chbThickLines.Size = New System.Drawing.Size(42, 17)
+        Me.chbThickLines.TabIndex = 22
+        Me.chbThickLines.Text = "ON"
+        Me.chbThickLines.UseVisualStyleBackColor = True
+        '
         'GroupBox2
         '
         Me.GroupBox2.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
@@ -758,7 +795,7 @@ Partial Class frmMain
         '
         Me.btnSaveCode.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.btnSaveCode.Enabled = False
-        Me.btnSaveCode.Location = New System.Drawing.Point(287, 574)
+        Me.btnSaveCode.Location = New System.Drawing.Point(287, 709)
         Me.btnSaveCode.Name = "btnSaveCode"
         Me.btnSaveCode.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.btnSaveCode.Size = New System.Drawing.Size(113, 23)
@@ -774,7 +811,7 @@ Partial Class frmMain
         Me.rtbCompensated.Name = "rtbCompensated"
         Me.rtbCompensated.ReadOnly = True
         Me.rtbCompensated.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.rtbCompensated.Size = New System.Drawing.Size(258, 511)
+        Me.rtbCompensated.Size = New System.Drawing.Size(258, 646)
         Me.rtbCompensated.TabIndex = 31
         Me.rtbCompensated.Text = ""
         '
@@ -830,7 +867,7 @@ Partial Class frmMain
         '
         Me.btnCompensate.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.btnCompensate.Enabled = False
-        Me.btnCompensate.Location = New System.Drawing.Point(154, 574)
+        Me.btnCompensate.Location = New System.Drawing.Point(154, 709)
         Me.btnCompensate.Name = "btnCompensate"
         Me.btnCompensate.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.btnCompensate.Size = New System.Drawing.Size(116, 23)
@@ -929,23 +966,139 @@ Partial Class frmMain
         Me.lblTargetZ.Text = "100"
         Me.lblTargetZ.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
-        'chbThickLines
+        'GroupBox5
         '
-        Me.chbThickLines.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.chbThickLines.AutoSize = True
-        Me.chbThickLines.Location = New System.Drawing.Point(131, 19)
-        Me.chbThickLines.Name = "chbThickLines"
-        Me.chbThickLines.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.chbThickLines.Size = New System.Drawing.Size(81, 17)
-        Me.chbThickLines.TabIndex = 22
-        Me.chbThickLines.Text = "Thick Lines"
-        Me.chbThickLines.UseVisualStyleBackColor = True
+        Me.GroupBox5.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.GroupBox5.Controls.Add(Me.chbTransparent)
+        Me.GroupBox5.Controls.Add(Me.Label16)
+        Me.GroupBox5.Controls.Add(Me.hsbFilament)
+        Me.GroupBox5.Controls.Add(Me.lblFilament)
+        Me.GroupBox5.Controls.Add(Me.Label12)
+        Me.GroupBox5.Controls.Add(Me.hsbNozzle)
+        Me.GroupBox5.Controls.Add(Me.lblNozzle)
+        Me.GroupBox5.Controls.Add(Me.chbSimFlow)
+        Me.GroupBox5.Controls.Add(Me.chbThickLines)
+        Me.GroupBox5.Controls.Add(Me.chbConical)
+        Me.GroupBox5.Location = New System.Drawing.Point(781, 563)
+        Me.GroupBox5.Name = "GroupBox5"
+        Me.GroupBox5.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.GroupBox5.Size = New System.Drawing.Size(226, 129)
+        Me.GroupBox5.TabIndex = 33
+        Me.GroupBox5.TabStop = False
+        Me.GroupBox5.Text = "Thick Lines"
+        '
+        'chbTransparent
+        '
+        Me.chbTransparent.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.chbTransparent.AutoSize = True
+        Me.chbTransparent.Checked = True
+        Me.chbTransparent.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chbTransparent.Enabled = False
+        Me.chbTransparent.Location = New System.Drawing.Point(11, 67)
+        Me.chbTransparent.Name = "chbTransparent"
+        Me.chbTransparent.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.chbTransparent.Size = New System.Drawing.Size(83, 17)
+        Me.chbTransparent.TabIndex = 29
+        Me.chbTransparent.Text = "Transparent"
+        Me.chbTransparent.UseVisualStyleBackColor = True
+        '
+        'Label16
+        '
+        Me.Label16.AutoSize = True
+        Me.Label16.Enabled = False
+        Me.Label16.Location = New System.Drawing.Point(113, 82)
+        Me.Label16.Name = "Label16"
+        Me.Label16.Size = New System.Drawing.Size(63, 13)
+        Me.Label16.TabIndex = 28
+        Me.Label16.Text = "Filament dia"
+        '
+        'hsbFilament
+        '
+        Me.hsbFilament.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.hsbFilament.Enabled = False
+        Me.hsbFilament.LargeChange = 1
+        Me.hsbFilament.Location = New System.Drawing.Point(99, 96)
+        Me.hsbFilament.Maximum = 300
+        Me.hsbFilament.Minimum = 100
+        Me.hsbFilament.Name = "hsbFilament"
+        Me.hsbFilament.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.hsbFilament.Size = New System.Drawing.Size(94, 22)
+        Me.hsbFilament.TabIndex = 27
+        Me.hsbFilament.Value = 175
+        '
+        'lblFilament
+        '
+        Me.lblFilament.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.lblFilament.AutoSize = True
+        Me.lblFilament.Enabled = False
+        Me.lblFilament.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblFilament.Location = New System.Drawing.Point(192, 100)
+        Me.lblFilament.Name = "lblFilament"
+        Me.lblFilament.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.lblFilament.Size = New System.Drawing.Size(28, 13)
+        Me.lblFilament.TabIndex = 26
+        Me.lblFilament.Text = "1.75"
+        Me.lblFilament.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'Label12
+        '
+        Me.Label12.AutoSize = True
+        Me.Label12.Enabled = False
+        Me.Label12.Location = New System.Drawing.Point(114, 40)
+        Me.Label12.Name = "Label12"
+        Me.Label12.Size = New System.Drawing.Size(56, 13)
+        Me.Label12.TabIndex = 25
+        Me.Label12.Text = "Nozzle dia"
+        '
+        'hsbNozzle
+        '
+        Me.hsbNozzle.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.hsbNozzle.Enabled = False
+        Me.hsbNozzle.LargeChange = 1
+        Me.hsbNozzle.Location = New System.Drawing.Point(100, 54)
+        Me.hsbNozzle.Maximum = 10
+        Me.hsbNozzle.Minimum = 1
+        Me.hsbNozzle.Name = "hsbNozzle"
+        Me.hsbNozzle.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.hsbNozzle.Size = New System.Drawing.Size(94, 22)
+        Me.hsbNozzle.TabIndex = 24
+        Me.hsbNozzle.Value = 3
+        '
+        'lblNozzle
+        '
+        Me.lblNozzle.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.lblNozzle.AutoSize = True
+        Me.lblNozzle.Enabled = False
+        Me.lblNozzle.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.lblNozzle.Location = New System.Drawing.Point(193, 58)
+        Me.lblNozzle.Name = "lblNozzle"
+        Me.lblNozzle.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.lblNozzle.Size = New System.Drawing.Size(22, 13)
+        Me.lblNozzle.TabIndex = 23
+        Me.lblNozzle.Text = "0.3"
+        Me.lblNozzle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'chbSimFlow
+        '
+        Me.chbSimFlow.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.chbSimFlow.AutoSize = True
+        Me.chbSimFlow.Enabled = False
+        Me.chbSimFlow.Location = New System.Drawing.Point(99, 19)
+        Me.chbSimFlow.Name = "chbSimFlow"
+        Me.chbSimFlow.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.chbSimFlow.Size = New System.Drawing.Size(91, 17)
+        Me.chbSimFlow.TabIndex = 22
+        Me.chbSimFlow.Text = "Simulate Flow"
+        Me.chbSimFlow.UseVisualStyleBackColor = True
         '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(1022, 621)
+        Me.ClientSize = New System.Drawing.Size(1022, 756)
+        Me.Controls.Add(Me.GroupBox5)
         Me.Controls.Add(Me.GroupBox4)
         Me.Controls.Add(Me.btnSaveCode)
         Me.Controls.Add(Me.btnResetCam)
@@ -1003,6 +1156,8 @@ Partial Class frmMain
         Me.GroupBox3.PerformLayout()
         Me.GroupBox4.ResumeLayout(False)
         Me.GroupBox4.PerformLayout()
+        Me.GroupBox5.ResumeLayout(False)
+        Me.GroupBox5.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -1076,4 +1231,14 @@ Partial Class frmMain
     Friend WithEvents lblDrawFrom As Label
     Friend WithEvents lblDrawTo As Label
     Friend WithEvents chbThickLines As CheckBox
+    Friend WithEvents chbConical As CheckBox
+    Friend WithEvents GroupBox5 As GroupBox
+    Friend WithEvents Label16 As Label
+    Friend WithEvents hsbFilament As HScrollBar
+    Friend WithEvents lblFilament As Label
+    Friend WithEvents Label12 As Label
+    Friend WithEvents hsbNozzle As HScrollBar
+    Friend WithEvents lblNozzle As Label
+    Friend WithEvents chbTransparent As CheckBox
+    Friend WithEvents chbSimFlow As CheckBox
 End Class
