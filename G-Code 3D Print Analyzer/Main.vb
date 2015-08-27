@@ -632,6 +632,10 @@ Public Class frmMain
         Dim l As Integer
         Dim trn As Integer  'Transparency required
 
+        'For radius sim
+        Dim vl, nd As Single    'vl=Vector length, nd=nozzle diameter
+        Dim el, fd, fr As Single        'el = extrusion lengh, fd=filament diameter, fr=feedrate
+
         'lblPrompt.ForeColor = Color.Red
         'lblPrompt.Text = "Drawing ..."
 
@@ -691,7 +695,10 @@ Public Class frmMain
                     'DrawCylinder(New Vector3(83.799, 77.859, 0), New Vector3(72.141, 66.202, 0), 0.1, 0.1, zcolor1, zcolor2, 16)
 
                     'Calculate r1 and r2 based on nozzle, filament, speed, extrusion
-                    DrawCylinder(pt1, pt2, 0.2, 0.1, zcolor1, zcolor2, 16)
+                    nd = hsbFilament.Value / 100 * Math.Sqrt(mygCode(lvectors(i).gLineNum2).E / Vector3.Subtract(pt1, pt2).Length) / 2   'Effective nozzle
+
+
+                    DrawCylinder(pt1, pt2, nd, nd, zcolor1, zcolor2, 16)
                 Else
                     DrawLine(pt1, pt2, zcolor1, zcolor2)
                 End If
