@@ -35,7 +35,7 @@ Public Class frmMain
         Public p1, p2 As Vector3    'Start and end point of physical vector (with backlash comp)
         Public l1, l2 As Vector3    'Start and end point of logical vector
         Public c1, c2 As Color      'Start and end colors of vector, corresponding to p1, p2
-        Public dia As Single        'Diameter of the vector - to emulate filament thickness
+        Public el1, el2, ep1, ep2 As Single     'Extrusion value at start and end of the vector - el=logical, ep=physical (w backlash)
         Public Layer As Integer     'The Layer that this vector is logically printing on
         Public gLineNum1, gLineNum2 As Integer  'The line numbers (Start and end) of the gCode that this vector was created from.
     End Structure
@@ -285,7 +285,7 @@ Public Class frmMain
                         CalcBacklash(curX, PhysX, BacklashXmin, BacklashXmax, nudBacklashX.Value)
                         CalcBacklash(curY, PhysY, BacklashYmin, BacklashYMax, nudBacklashY.Value)
                         CalcBacklash(curZ, PhysZ, BacklashZMin, BacklashZMax, nudBacklashZ.Value)
-                        CalcBacklash(curE, PhysE, BacklashEMin, BacklashEMax, 0)   'No Backlash for E for now
+                        CalcBacklash(curE, PhysE, BacklashEMin, BacklashEMax, nudBacklashE.Value)   'No Backlash for E for now
 
                         'Assign backlash compensated values
                         If curX <> PhysX Then
@@ -316,6 +316,10 @@ Public Class frmMain
                                 .Layer = mygCode(i).Layer
                                 .gLineNum1 = myPrevgLineNum
                                 .gLineNum2 = i
+                                .el1 = lastE
+                                .el2 = curE
+                                .ep1 = PrevE
+                                .ep2 = PhysE
                             End With
                             .VectorNum = myVectors
                         End If
@@ -458,7 +462,7 @@ Public Class frmMain
         For i = 1 To mygLines
             With mygCode(i)
                 Select Case .Token
-                    Case "G1"       'Move X, Y, Z, E
+                    Case "G0", "G1"       'Move X, Y, Z, E
                         'Process compensation only when there is some valid Line Extrusion/3D Print command - not just spitting, recoiling, etc.
                         If (.E <> -999 Or .X <> -999 Or .Y <> -999 Or .Z <> -999) Then
                             sbline.Append("G1 ")
@@ -487,7 +491,11 @@ Public Class frmMain
                                             sbline.Append(Strings.Left(strToken(j), 1) & .BZ)
                                         End If
                                     Case "E"                        'Ignore E Compensation for now
-                                        sbline.Append(Strings.Left(strToken(j), 1) & .E)
+                                        If .BE = -999 Then
+                                            sbline.Append(Strings.Left(strToken(j), 1) & .E)
+                                        Else
+                                            sbline.Append(Strings.Left(strToken(j), 1) & .BE)
+                                        End If
                                     Case "F"                        'No F Compensation 
                                         sbline.Append(Strings.Left(strToken(j), 1) & .F)
                                     Case Else
@@ -628,6 +636,7 @@ Public Class frmMain
         'Also draw vectors as thick lines with volume or just lines
 
         Dim pt1, pt2 As Vector3
+        Dim e1, e2 As Single
         Dim zcolor1, zcolor2 As Color
         Dim l As Integer
         Dim trn As Integer  'Transparency required
@@ -682,10 +691,14 @@ Public Class frmMain
                     'Set points to physical points
                     pt1 = lvectors(i).p1
                     pt2 = lvectors(i).p2
+                    e1 = lvectors(i).ep1
+                    e2 = lvectors(i).ep2
                 Else
                     'Set to logical points
                     pt1 = lvectors(i).l1
                     pt2 = lvectors(i).l2
+                    e1 = lvectors(i).el1
+                    e2 = lvectors(i).el2
                 End If
 
                 'zcolor = Color.FromArgb(RGB(CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd()))))
@@ -694,11 +707,14 @@ Public Class frmMain
                     'DrawCylinder(New Vector3(10, 30, 10), New Vector3(20, 20, 20), 0.1, 0.1, zcolor1, zcolor2, 16)
                     'DrawCylinder(New Vector3(83.799, 77.859, 0), New Vector3(72.141, 66.202, 0), 0.1, 0.1, zcolor1, zcolor2, 16)
 
-                    'Calculate r1 and r2 based on nozzle, filament, speed, extrusion
-                    nd = hsbFilament.Value / 100 * Math.Sqrt(mygCode(lvectors(i).gLineNum2).E / Vector3.Subtract(pt1, pt2).Length) / 2   'Effective nozzle
-
-
-                    DrawCylinder(pt1, pt2, nd, nd, zcolor1, zcolor2, 16)
+                    'Calculate r1 and r2 based on nozzle, filament, speed, extrusion. Extrusion must be calculated as the difference from previous E value.
+                    'diameter at nozzle = filament diameter * Sqrt( Extrusion length / Printed Length )
+                    'Current algorithm ignores the actual nozzle diameter.
+                    el = e2 - e1
+                    vl = Vector3.Subtract(pt1, pt2).Length
+                    fd = hsbFilament.Value / 100
+                    nd = fd * Math.Sqrt(el / vl)
+                    DrawCylinder(pt1, pt2, nd / 2, nd / 2, zcolor1, zcolor2, 16)
                 Else
                     DrawLine(pt1, pt2, zcolor1, zcolor2)
                 End If
@@ -767,9 +783,10 @@ Public Class frmMain
                 'Rotate around y
                 vt = Vector3.Transform(vt, ry)
 
-                'Rotate around x
-                vt = Vector3.Transform(vt, rx)
-
+                If d <> 0 Then  'If d=0, means the vector is already in the x direction, so no rotation in x needed.
+                    'Rotate around x
+                    vt = Vector3.Transform(vt, rx)
+                End If
                 'Translate to final position
                 vt = Vector3.Transform(vt, tx)
 
@@ -1412,8 +1429,8 @@ Public Class frmMain
         Redraw()
     End Sub
 
-    Private Sub nudBacklashX_ValueChanged(sender As Object, e As EventArgs) Handles nudBacklashX.ValueChanged, nudBacklashY.ValueChanged, nudBacklashZ.ValueChanged
-        If (nudBacklashX.Value <> 0 Or nudBacklashY.Value <> 0 Or nudBacklashZ.Value <> 0) And blnManualMode Then
+    Private Sub nudBacklashX_ValueChanged(sender As Object, e As EventArgs) Handles nudBacklashX.ValueChanged, nudBacklashY.ValueChanged, nudBacklashZ.ValueChanged, nudBacklashE.ValueChanged
+        If (nudBacklashX.Value <> 0 Or nudBacklashY.Value <> 0 Or nudBacklashZ.Value <> 0 Or nudBacklashE.Value <> 0) And blnManualMode Then
             blnManualMode = False
             ProcessVectors()
             Redraw()
