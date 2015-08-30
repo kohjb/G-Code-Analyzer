@@ -704,17 +704,22 @@ Public Class frmMain
                 'zcolor = Color.FromArgb(RGB(CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd())), CInt(Int(256 * Rnd()))))
 
                 If chbThickLines.Checked Then
-                    'DrawCylinder(New Vector3(10, 30, 10), New Vector3(20, 20, 20), 0.1, 0.1, zcolor1, zcolor2, 16)
-                    'DrawCylinder(New Vector3(83.799, 77.859, 0), New Vector3(72.141, 66.202, 0), 0.1, 0.1, zcolor1, zcolor2, 16)
+                    If chbFlat.Checked Then
+                        'DrawFlat(New Vector3(10, 10, 0.3), New Vector3(20, 20, 0.3), nd / 2, nd / 2, zcolor1, zcolor2)
+                        DrawFlat(pt1, pt2, nd / 2, nd / 2, zcolor1, zcolor2)
+                    Else
+                        'DrawCylinder(New Vector3(10, 30, 10), New Vector3(20, 20, 20), 0.1, 0.1, zcolor1, zcolor2, 16)
+                        'DrawCylinder(New Vector3(83.799, 77.859, 0), New Vector3(72.141, 66.202, 0), 0.1, 0.1, zcolor1, zcolor2, 16)
 
-                    'Calculate r1 and r2 based on nozzle, filament, speed, extrusion. Extrusion must be calculated as the difference from previous E value.
-                    'diameter at nozzle = filament diameter * Sqrt( Extrusion length / Printed Length )
-                    'Current algorithm ignores the actual nozzle diameter.
-                    el = e2 - e1
-                    vl = Vector3.Subtract(pt1, pt2).Length
-                    fd = hsbFilament.Value / 100
-                    nd = fd * Math.Sqrt(el / vl)
-                    DrawCylinder(pt1, pt2, nd / 2, nd / 2, zcolor1, zcolor2, 16)
+                        'Calculate r1 and r2 based on nozzle, filament, speed, extrusion. Extrusion must be calculated as the difference from previous E value.
+                        'diameter at nozzle = filament diameter * Sqrt( Extrusion length / Printed Length )
+                        'Current algorithm ignores the actual nozzle diameter.
+                        el = e2 - e1
+                        vl = Vector3.Subtract(pt1, pt2).Length
+                        fd = hsbFilament.Value / 100
+                        nd = fd * Math.Sqrt(el / vl)
+                        DrawThick(pt1, pt2, nd / 2, nd / 2, zcolor1, zcolor2, 16)
+                    End If
                 Else
                     DrawLine(pt1, pt2, zcolor1, zcolor2)
                 End If
@@ -739,7 +744,58 @@ Public Class frmMain
         'lblPrompt.Text = "Ready."
     End Sub
 
-    Private Sub DrawCylinder(Pt1 As Vector3, Pt2 As Vector3, r1 As Single, r2 As Single, c1 As Color, c2 As Color, ns As Integer)
+    Private Sub DrawFlat(Pt1 As Vector3, Pt2 As Vector3, r1 As Single, r2 As Single, c1 As Color, c2 As Color)
+        'Draw Flat outlines in Z space
+
+        Dim theta As Double
+        Dim vertices As New List(Of Vector3)
+        Dim x, y, z, d, s1, s2 As Single
+        Dim tx, rx, ry, rz As Matrix4
+        Dim px, ux, vt As Vector3
+        Dim pl, pr, p1, p2, p3, p4 As Vector2       'Left and right perpendicualr vectors, and 4 sides of Quad.
+        Dim h, ax, ay, az As Single
+
+        px = Vector3.Subtract(Pt2, Pt1)     'Create Vector of the From - To points
+        h = px.Length                       'Length of the Vector
+        ux = px.Normalized                  'Create Unit Vector of From-To
+        d = Math.Sqrt(ux.Y ^ 2 + ux.Z ^ 2)  'Get the hypoteneuse of the unit vector projected on the YZ plane
+        ry = New Matrix4(d, 0, -ux.X, 0, 0, 1, 0, 0, ux.X, 0, d, 0, 0, 0, 0, 1) 'Create the Y rotation Matrix
+        rx = New Matrix4(1, 0, 0, 0, 0, ux.Z / d, -ux.Y / d, 0, 0, ux.Y / d, ux.Z / d, 0, 0, 0, 0, 1) 'Create the X rotation matrix
+        tx = Matrix4.CreateTranslation(Pt1)     'Create the Translation back to proper location
+
+        If chbSimFlow.Checked Then      'Simulate the Flow of the filament through the nozzle, and at speed, and length.
+            s1 = r1
+            s2 = r2
+        Else
+            s1 = hsbNozzle.Value / 10
+            If optConical.Checked Then
+                s2 = s1 * 0.5
+            ElseIf optCylinder.Checked Then
+                s2 = s1
+            End If
+        End If
+
+        pl = px.Xy.PerpendicularLeft.Normalized
+        pl.Scale(s1 / 2, s1 / 2)
+        p1 = Vector2.Add(Pt1.Xy, pl)
+        p2 = Vector2.Subtract(Pt1.Xy, pl)
+
+        pr = px.Xy.PerpendicularLeft.Normalized
+        pr.Scale(s2 / 2, s2 / 2)
+        p3 = Vector2.Subtract(Pt2.Xy, pr)
+        p4 = Vector2.Add(Pt2.Xy, pr)
+
+        GL.Begin(BeginMode.Quads)
+        GL.Color3(c1)
+        GL.Vertex3(p1.X, p1.Y, Pt1.Z)
+        GL.Vertex3(p2.X, p2.Y, Pt1.Z)
+        GL.Color3(c2)
+        GL.Vertex3(p3.X, p3.Y, Pt2.Z)
+        GL.Vertex3(p4.X, p4.Y, Pt2.Z)
+        GL.End()
+    End Sub
+
+    Private Sub DrawThick(Pt1 As Vector3, Pt2 As Vector3, r1 As Single, r2 As Single, c1 As Color, c2 As Color, ns As Integer)
         'Draw cylinder from Pt1 to Pt2 with radius beginning with r1 to r2, and color c1 to c2, ns segments
         'Start by creating a vertical cylinder located at Z. Then rotate the cylinder by rotating in Y, then X to align with P1-P2, then translating to P1
 
@@ -763,9 +819,9 @@ Public Class frmMain
             s2 = r2
         Else
             s1 = hsbNozzle.Value / 10
-            If chbConical.Checked Then
+            If optConical.Checked Then
                 s2 = s1 * 0.5
-            Else
+            ElseIf optCylinder.Checked Then
                 s2 = s1
             End If
         End If
@@ -807,7 +863,11 @@ Public Class frmMain
 
         GL.Begin(BeginMode.Triangles)
         For Each i In indices
-            GL.Color3(c1)
+            If i < ns Then
+                GL.Color3(c1)
+            Else
+                GL.Color3(c2)
+            End If
             GL.Vertex3(vertices(i))
         Next
         GL.End()
@@ -1088,13 +1148,17 @@ Public Class frmMain
 
     Private Sub chbThickLines_CheckedChanged(sender As Object, e As EventArgs) Handles chbThickLines.CheckedChanged, chbSimFlow.CheckedChanged
         If chbThickLines.Checked Then
-            chbConical.Enabled = True
+            optCylinder.Enabled = True
+            optConical.Enabled = True
+            chbFlat.Enabled = True
             chbTransparent.Enabled = True
             hsbFilament.Enabled = True
             hsbNozzle.Enabled = True
             chbSimFlow.Enabled = True
         Else
-            chbConical.Enabled = False
+            optCylinder.Enabled = False
+            optConical.Enabled = False
+            chbFlat.Enabled = False
             chbTransparent.Enabled = False
             hsbFilament.Enabled = False
             hsbNozzle.Enabled = False
@@ -1107,7 +1171,15 @@ Public Class frmMain
         End If
     End Sub
 
-    Private Sub chbConical_CheckedChanged(sender As Object, e As EventArgs) Handles chbConical.CheckedChanged, chbTransparent.CheckedChanged
+    Private Sub chbFlat_CheckedChanged(sender As Object, e As EventArgs) Handles chbFlat.CheckedChanged, chbTransparent.CheckedChanged
+        If blnManualMode Then
+            blnManualMode = False
+            Redraw()
+            blnManualMode = True
+        End If
+    End Sub
+
+    Private Sub optConical_CheckedChanged(sender As Object, e As EventArgs) Handles optConical.CheckedChanged, optCylinder.CheckedChanged
         If blnManualMode Then
             blnManualMode = False
             Redraw()
@@ -1334,7 +1406,7 @@ Public Class frmMain
         lblCameraFOV.Text = hsbCameraZoom.Value
     End Sub
 
-    Private Sub hsbTargetZ_ValueChanged(sender As Object, e As EventArgs) Handles hsbTargetZ.ValueChanged, hsbTargetY.ValueChanged, hsbTargetZ.ValueChanged
+    Private Sub hsbTargetZ_ValueChanged(sender As Object, e As EventArgs) Handles hsbTargetX.ValueChanged, hsbTargetY.ValueChanged, hsbTargetZ.ValueChanged
         'TargetPos = New Vector4(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value, 0)
         If blnManualMode Then
             blnManualMode = False
@@ -1371,10 +1443,10 @@ Public Class frmMain
                 rtbInterpreted.SelectionStart = charStart
                 rtbInterpreted.SelectionLength = charEnd - charStart
                 rtbInterpreted.Focus()
+                Redraw()
 
                 blnManualMode = True
             End If
-            Redraw()
         End If
         lblDrawOne.Text = hsbSingleLayer.Value
     End Sub
@@ -1392,7 +1464,6 @@ Public Class frmMain
                 rtbInterpreted.SelectionStart = charStart
                 rtbInterpreted.SelectionLength = charEnd - rtbInterpreted.SelectionStart
                 rtbInterpreted.Focus()
-                blnManualMode = True
             End If
 
             Redraw()

@@ -67,13 +67,14 @@ Partial Class frmMain
         Me.lblDrawOne = New System.Windows.Forms.Label()
         Me.lblDrawFrom = New System.Windows.Forms.Label()
         Me.lblDrawTo = New System.Windows.Forms.Label()
-        Me.chbConical = New System.Windows.Forms.CheckBox()
         Me.chbThickLines = New System.Windows.Forms.CheckBox()
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
         Me.chbSlow = New System.Windows.Forms.CheckBox()
         Me.optColorRainbow = New System.Windows.Forms.RadioButton()
         Me.chbBacklashON = New System.Windows.Forms.CheckBox()
         Me.GroupBox3 = New System.Windows.Forms.GroupBox()
+        Me.Label17 = New System.Windows.Forms.Label()
+        Me.nudBacklashE = New System.Windows.Forms.NumericUpDown()
         Me.Label3 = New System.Windows.Forms.Label()
         Me.btnResetCam = New System.Windows.Forms.Button()
         Me.btnSaveCode = New System.Windows.Forms.Button()
@@ -92,6 +93,9 @@ Partial Class frmMain
         Me.lblTargetY = New System.Windows.Forms.Label()
         Me.lblTargetZ = New System.Windows.Forms.Label()
         Me.GroupBox5 = New System.Windows.Forms.GroupBox()
+        Me.chbFlat = New System.Windows.Forms.CheckBox()
+        Me.optConical = New System.Windows.Forms.RadioButton()
+        Me.optCylinder = New System.Windows.Forms.RadioButton()
         Me.chbTransparent = New System.Windows.Forms.CheckBox()
         Me.Label16 = New System.Windows.Forms.Label()
         Me.hsbFilament = New System.Windows.Forms.HScrollBar()
@@ -100,17 +104,15 @@ Partial Class frmMain
         Me.hsbNozzle = New System.Windows.Forms.HScrollBar()
         Me.lblNozzle = New System.Windows.Forms.Label()
         Me.chbSimFlow = New System.Windows.Forms.CheckBox()
-        Me.nudBacklashE = New System.Windows.Forms.NumericUpDown()
-        Me.Label17 = New System.Windows.Forms.Label()
         CType(Me.nudBacklashX, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashY, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.nudBacklashZ, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox1.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
         Me.GroupBox3.SuspendLayout()
+        CType(Me.nudBacklashE, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox4.SuspendLayout()
         Me.GroupBox5.SuspendLayout()
-        CType(Me.nudBacklashE, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'ofdgCodeFile
@@ -584,7 +586,7 @@ Partial Class frmMain
         Me.GroupBox1.Location = New System.Drawing.Point(781, 422)
         Me.GroupBox1.Name = "GroupBox1"
         Me.GroupBox1.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.GroupBox1.Size = New System.Drawing.Size(227, 154)
+        Me.GroupBox1.Size = New System.Drawing.Size(227, 141)
         Me.GroupBox1.TabIndex = 24
         Me.GroupBox1.TabStop = False
         Me.GroupBox1.Text = "Layers/Lines to Draw"
@@ -676,19 +678,6 @@ Partial Class frmMain
         Me.lblDrawTo.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         Me.lblDrawTo.Visible = False
         '
-        'chbConical
-        '
-        Me.chbConical.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.chbConical.AutoSize = True
-        Me.chbConical.Enabled = False
-        Me.chbConical.Location = New System.Drawing.Point(11, 43)
-        Me.chbConical.Name = "chbConical"
-        Me.chbConical.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.chbConical.Size = New System.Drawing.Size(61, 17)
-        Me.chbConical.TabIndex = 22
-        Me.chbConical.Text = "Conical"
-        Me.chbConical.UseVisualStyleBackColor = True
-        '
         'chbThickLines
         '
         Me.chbThickLines.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
@@ -770,6 +759,32 @@ Partial Class frmMain
         Me.GroupBox3.TabIndex = 27
         Me.GroupBox3.TabStop = False
         Me.GroupBox3.Text = "Backlash"
+        '
+        'Label17
+        '
+        Me.Label17.AutoSize = True
+        Me.Label17.Location = New System.Drawing.Point(24, 109)
+        Me.Label17.Name = "Label17"
+        Me.Label17.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.Label17.Size = New System.Drawing.Size(14, 13)
+        Me.Label17.TabIndex = 19
+        Me.Label17.Text = "E"
+        Me.Label17.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'nudBacklashE
+        '
+        Me.nudBacklashE.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.nudBacklashE.DecimalPlaces = 3
+        Me.nudBacklashE.ForeColor = System.Drawing.Color.Orange
+        Me.nudBacklashE.Increment = New Decimal(New Integer() {1, 0, 0, 65536})
+        Me.nudBacklashE.Location = New System.Drawing.Point(44, 103)
+        Me.nudBacklashE.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
+        Me.nudBacklashE.Name = "nudBacklashE"
+        Me.nudBacklashE.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.nudBacklashE.Size = New System.Drawing.Size(70, 20)
+        Me.nudBacklashE.TabIndex = 23
+        Me.nudBacklashE.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
         'Label3
         '
@@ -972,6 +987,9 @@ Partial Class frmMain
         'GroupBox5
         '
         Me.GroupBox5.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.GroupBox5.Controls.Add(Me.chbFlat)
+        Me.GroupBox5.Controls.Add(Me.optConical)
+        Me.GroupBox5.Controls.Add(Me.optCylinder)
         Me.GroupBox5.Controls.Add(Me.chbTransparent)
         Me.GroupBox5.Controls.Add(Me.Label16)
         Me.GroupBox5.Controls.Add(Me.hsbFilament)
@@ -981,14 +999,53 @@ Partial Class frmMain
         Me.GroupBox5.Controls.Add(Me.lblNozzle)
         Me.GroupBox5.Controls.Add(Me.chbSimFlow)
         Me.GroupBox5.Controls.Add(Me.chbThickLines)
-        Me.GroupBox5.Controls.Add(Me.chbConical)
-        Me.GroupBox5.Location = New System.Drawing.Point(781, 582)
+        Me.GroupBox5.Location = New System.Drawing.Point(781, 569)
         Me.GroupBox5.Name = "GroupBox5"
         Me.GroupBox5.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.GroupBox5.Size = New System.Drawing.Size(226, 129)
         Me.GroupBox5.TabIndex = 33
         Me.GroupBox5.TabStop = False
         Me.GroupBox5.Text = "Thick Lines"
+        '
+        'chbFlat
+        '
+        Me.chbFlat.AutoSize = True
+        Me.chbFlat.Checked = True
+        Me.chbFlat.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chbFlat.Enabled = False
+        Me.chbFlat.Location = New System.Drawing.Point(11, 83)
+        Me.chbFlat.Name = "chbFlat"
+        Me.chbFlat.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.chbFlat.Size = New System.Drawing.Size(43, 17)
+        Me.chbFlat.TabIndex = 33
+        Me.chbFlat.Text = "Flat"
+        Me.chbFlat.UseVisualStyleBackColor = True
+        '
+        'optConical
+        '
+        Me.optConical.AutoSize = True
+        Me.optConical.Checked = True
+        Me.optConical.Enabled = False
+        Me.optConical.Location = New System.Drawing.Point(21, 62)
+        Me.optConical.Name = "optConical"
+        Me.optConical.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.optConical.Size = New System.Drawing.Size(60, 17)
+        Me.optConical.TabIndex = 31
+        Me.optConical.TabStop = True
+        Me.optConical.Text = "Conical"
+        Me.optConical.UseVisualStyleBackColor = True
+        '
+        'optCylinder
+        '
+        Me.optCylinder.AutoSize = True
+        Me.optCylinder.Enabled = False
+        Me.optCylinder.Location = New System.Drawing.Point(21, 42)
+        Me.optCylinder.Name = "optCylinder"
+        Me.optCylinder.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.optCylinder.Size = New System.Drawing.Size(62, 17)
+        Me.optCylinder.TabIndex = 32
+        Me.optCylinder.Text = "Cylinder"
+        Me.optCylinder.UseVisualStyleBackColor = True
         '
         'chbTransparent
         '
@@ -997,7 +1054,7 @@ Partial Class frmMain
         Me.chbTransparent.Checked = True
         Me.chbTransparent.CheckState = System.Windows.Forms.CheckState.Checked
         Me.chbTransparent.Enabled = False
-        Me.chbTransparent.Location = New System.Drawing.Point(11, 67)
+        Me.chbTransparent.Location = New System.Drawing.Point(11, 106)
         Me.chbTransparent.Name = "chbTransparent"
         Me.chbTransparent.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.chbTransparent.Size = New System.Drawing.Size(83, 17)
@@ -1096,32 +1153,6 @@ Partial Class frmMain
         Me.chbSimFlow.Text = "Simulate Flow"
         Me.chbSimFlow.UseVisualStyleBackColor = True
         '
-        'nudBacklashE
-        '
-        Me.nudBacklashE.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.nudBacklashE.DecimalPlaces = 3
-        Me.nudBacklashE.ForeColor = System.Drawing.Color.Orange
-        Me.nudBacklashE.Increment = New Decimal(New Integer() {1, 0, 0, 65536})
-        Me.nudBacklashE.Location = New System.Drawing.Point(44, 103)
-        Me.nudBacklashE.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
-        Me.nudBacklashE.Name = "nudBacklashE"
-        Me.nudBacklashE.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.nudBacklashE.Size = New System.Drawing.Size(70, 20)
-        Me.nudBacklashE.TabIndex = 23
-        Me.nudBacklashE.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
-        '
-        'Label17
-        '
-        Me.Label17.AutoSize = True
-        Me.Label17.Location = New System.Drawing.Point(24, 109)
-        Me.Label17.Name = "Label17"
-        Me.Label17.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.Label17.Size = New System.Drawing.Size(14, 13)
-        Me.Label17.TabIndex = 19
-        Me.Label17.Text = "E"
-        Me.Label17.TextAlign = System.Drawing.ContentAlignment.MiddleRight
-        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -1183,11 +1214,11 @@ Partial Class frmMain
         Me.GroupBox2.PerformLayout()
         Me.GroupBox3.ResumeLayout(False)
         Me.GroupBox3.PerformLayout()
+        CType(Me.nudBacklashE, System.ComponentModel.ISupportInitialize).EndInit()
         Me.GroupBox4.ResumeLayout(False)
         Me.GroupBox4.PerformLayout()
         Me.GroupBox5.ResumeLayout(False)
         Me.GroupBox5.PerformLayout()
-        CType(Me.nudBacklashE, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -1261,7 +1292,6 @@ Partial Class frmMain
     Friend WithEvents lblDrawFrom As Label
     Friend WithEvents lblDrawTo As Label
     Friend WithEvents chbThickLines As CheckBox
-    Friend WithEvents chbConical As CheckBox
     Friend WithEvents GroupBox5 As GroupBox
     Friend WithEvents Label16 As Label
     Friend WithEvents hsbFilament As HScrollBar
@@ -1273,4 +1303,7 @@ Partial Class frmMain
     Friend WithEvents chbSimFlow As CheckBox
     Friend WithEvents Label17 As Label
     Friend WithEvents nudBacklashE As NumericUpDown
+    Friend WithEvents optConical As RadioButton
+    Friend WithEvents optCylinder As RadioButton
+    Friend WithEvents chbFlat As CheckBox
 End Class
