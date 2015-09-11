@@ -233,7 +233,7 @@ Public Class frmMain
         Next
         mygLayers = currentlayer
         hsbSingleLayer.Maximum = mygLayers
-        hsbSingleLayer.Value = mygLayers
+        hsbSingleLayer.Value = 1
         nend = mygLayers
     End Sub
 
