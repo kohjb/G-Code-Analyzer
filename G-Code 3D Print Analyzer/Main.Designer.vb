@@ -789,12 +789,13 @@ Partial Class frmMain
         'Label3
         '
         Me.Label3.ForeColor = System.Drawing.Color.SlateGray
-        Me.Label3.Location = New System.Drawing.Point(284, 20)
+        Me.Label3.Location = New System.Drawing.Point(284, 9)
         Me.Label3.Name = "Label3"
         Me.Label3.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.Label3.Size = New System.Drawing.Size(388, 23)
+        Me.Label3.Size = New System.Drawing.Size(388, 34)
         Me.Label3.TabIndex = 28
-        Me.Label3.Text = "Rt-Click - rotate around Target, Lt-Click - rotate Camera, Wheel - Zoom"
+        Me.Label3.Text = "Rt-Click - rotate around Target, Lt-Click - rotate Camera, Shf-Lt-Click - Pan, Wh" &
+    "eel - Zoom"
         Me.Label3.TextAlign = System.Drawing.ContentAlignment.BottomLeft
         '
         'btnResetCam
