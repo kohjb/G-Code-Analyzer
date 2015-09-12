@@ -1284,79 +1284,168 @@ Public Class frmMain
                 StartPoint = EndPoint
                 LastPoint = EndPoint
 
-            ElseIf isLeftButton Then    'Pan camera left right up down
-                Dim dTheta, Theta, ThetaZ, dX, dY, dZ, dR, dRz As Double
-                Dim blnDraw As Boolean = False
-                Dim EndPoint As Point = glc3DView.PointToScreen(New Point(e.X, e.Y))
-                Dim Sensitivity As Single     'The number of degrees to move with each mouse move
-                'Debug.Print(EndPoint.X & ", " & EndPoint.Y)
+            ElseIf isLeftButton Then
+                If Control.ModifierKeys = Keys.Shift Then 'Pan Camera Left, Right, Up, Down
+                    'KJB : Not done yet
 
-                chbAutotgt.Checked = False
+                    'Get Camera to Target Vector Dv. Get Vertical Vector Vv. 
+                    'Horizontal Vector Hv = Vv cross Dv. Up/Down Vector Uv = Hv cross Dv
 
-                'Amount of X movement = amount of degrees of rotation in horizontal plane
-                dTheta = EndPoint.X - StartPoint.X
-                If dTheta <> 0 Then
-                    Sensitivity = 0.18 / 59 * hsbCameraZoom.Value + 0.0169
-                    'Get vector from camera to target
-                    dX = TargetPos.X - CameraPos.X
-                    dY = TargetPos.Y - CameraPos.Y
-                    dZ = TargetPos.Z - CameraPos.Z
-                    dR = Math.Sqrt(dX ^ 2 + dY ^ 2) 'Horizontal radius
-                    Theta = Math.Atan2(dY, dX)      'Angle from Camera to Target
+                    Dim dTheta, Theta, ThetaZ, dX, dY, dZ, dR, dRz As Double
+                    Dim blnDraw As Boolean = False
+                    Dim EndPoint As Point = glc3DView.PointToScreen(New Point(e.X, e.Y))
+                    Dim Sensitivity As Single     'The number of degrees to move with each mouse move
+                    chbAutotgt.Checked = False
+                    Dim Dv, Uv, Hv, Vv, Cv, Tv As Vector3   'Cv = Camera vector
 
-                    'Now increase Theta by the new angle
-                    Theta += dTheta * Sensitivity * Math.PI / 180
-                    dX = dR * Math.Cos(Theta)
-                    dY = dR * Math.Sin(Theta)
-                    'dZ = dZ    'no change to dZ
+                    Sensitivity = 0.5 * hsbCameraZoom.Value / 100
 
-                    'Now calculate the new Camera position
-                    TargetPos.X = dX + CameraPos.X
-                    TargetPos.Y = dY + CameraPos.Y
-                    TargetPos.Z = dZ + CameraPos.Z
+                    'Amount of X movement = units of translation in horizontal plane
+                    dTheta = EndPoint.X - StartPoint.X
+                    If dTheta <> 0 Then
+                        dTheta = -Sensitivity * dTheta
 
-                    blnDraw = True
+                        'Get vector from camera to target
+
+                        dX = TargetPos.X - CameraPos.X
+                        dY = TargetPos.Y - CameraPos.Y
+                        dZ = TargetPos.Z - CameraPos.Z
+                        dR = Math.Sqrt(dX ^ 2 + dY ^ 2) 'Horizontal radius
+                        Theta = Math.Atan2(dY, dX)      'Angle from Camera to Target
+                        Dv = New Vector3(dX, dY, dZ)
+                        Vv = New Vector3(0, 0, -1)
+                        Hv = Vector3.Cross(Vv, Dv).Normalized
+                        Uv = Vector3.Cross(Hv, Dv).Normalized
+
+                        'Now move Camera and Target by a distance in Hv direction
+                        Cv = CameraPos.Xyz
+                        Tv = TargetPos.Xyz
+                        Hv = Vector3.Mult(Hv, dTheta)
+                        Cv = Vector3.Add(Cv, Hv)
+                        Tv = Vector3.Add(Tv, Hv)
+                        CameraPos.Xyz = Cv
+                        TargetPos.Xyz = Tv
+                        blnDraw = True
+                    End If
+
+                    'Amount of Y movement = units of translation in Up/Down plane
+                    dTheta = EndPoint.Y - StartPoint.Y
+                    If dTheta <> 0 Then
+                        dTheta = Sensitivity * dTheta
+
+                        'Get vector from camera to target
+
+                        dX = TargetPos.X - CameraPos.X
+                        dY = TargetPos.Y - CameraPos.Y
+                        dZ = TargetPos.Z - CameraPos.Z
+                        dR = Math.Sqrt(dX ^ 2 + dY ^ 2) 'Horizontal radius
+                        Theta = Math.Atan2(dY, dX)      'Angle from Camera to Target
+                        Dv = New Vector3(dX, dY, dZ)
+                        Vv = New Vector3(0, 0, -1)
+                        Hv = Vector3.Cross(Vv, Dv).Normalized
+                        Uv = Vector3.Cross(Hv, Dv).Normalized
+
+                        'Now move Camera and Target by a distance in Uv direction
+                        Cv = CameraPos.Xyz
+                        Tv = TargetPos.Xyz
+                        Uv = Vector3.Mult(Uv, dTheta)
+                        Cv = Vector3.Add(Cv, Uv)
+                        Tv = Vector3.Add(Tv, Uv)
+                        CameraPos.Xyz = Cv
+                        TargetPos.Xyz = Tv
+                        blnDraw = True
+                    End If
+
+                    If blnDraw Then     'Draw if needed
+                        hsbCameraX.Value = CameraPos.X
+                        hsbCameraY.Value = CameraPos.Y
+                        hsbCameraZ.Value = CameraPos.Z
+                        hsbTargetX.Value = TargetPos.X
+                        hsbTargetY.Value = TargetPos.Y
+                        hsbTargetZ.Value = TargetPos.Z
+                        Redraw()
+                    End If
+
+                    StartPoint = EndPoint
+                    LastPoint = EndPoint
+
+
+                Else 'Rotate camera left right up down
+                    Dim dTheta, Theta, ThetaZ, dX, dY, dZ, dR, dRz As Double
+                    Dim blnDraw As Boolean = False
+                    Dim EndPoint As Point = glc3DView.PointToScreen(New Point(e.X, e.Y))
+                    Dim Sensitivity As Single     'The number of degrees to move with each mouse move
+                    'Debug.Print(EndPoint.X & ", " & EndPoint.Y)
+
+                    chbAutotgt.Checked = False
+
+                    'Amount of X movement = amount of degrees of rotation in horizontal plane
+                    dTheta = EndPoint.X - StartPoint.X
+                    If dTheta <> 0 Then
+                        Sensitivity = 0.18 / 59 * hsbCameraZoom.Value + 0.0169
+                        'Get vector from camera to target
+                        dX = TargetPos.X - CameraPos.X
+                        dY = TargetPos.Y - CameraPos.Y
+                        dZ = TargetPos.Z - CameraPos.Z
+                        dR = Math.Sqrt(dX ^ 2 + dY ^ 2) 'Horizontal radius
+                        Theta = Math.Atan2(dY, dX)      'Angle from Camera to Target
+
+                        'Now increase Theta by the new angle
+                        Theta += dTheta * Sensitivity * Math.PI / 180
+                        dX = dR * Math.Cos(Theta)
+                        dY = dR * Math.Sin(Theta)
+                        'dZ = dZ    'no change to dZ
+
+                        'Now calculate the new Camera position
+                        TargetPos.X = dX + CameraPos.X
+                        TargetPos.Y = dY + CameraPos.Y
+                        TargetPos.Z = dZ + CameraPos.Z
+
+                        blnDraw = True
+                    End If
+
+                    'Amount of Y movement = amount of degrees of rotation in vertical plane
+                    dTheta = EndPoint.Y - StartPoint.Y
+                    If dTheta <> 0 Then
+                        Sensitivity = 0.18 / 59 * hsbCameraZoom.Value + 0.0169
+                        dX = TargetPos.X - CameraPos.X
+                        dY = TargetPos.Y - CameraPos.Y
+                        dZ = TargetPos.Z - CameraPos.Z
+                        dR = Math.Sqrt(dX ^ 2 + dY ^ 2) 'Horizontal radius
+                        Theta = Math.Atan2(dY, dX)      'Angle from Camera to Target
+
+                        dRz = Math.Sqrt(dR ^ 2 + dZ ^ 2)    '3D radius
+                        ThetaZ = Math.Atan2(dZ, dR)
+
+                        'Now increase Theta by the new angle
+                        ThetaZ += dTheta * Sensitivity * Math.PI / 180
+                        If ThetaZ > 80 * Math.PI / 180 Then ThetaZ = 80 * Math.PI / 180
+                        If ThetaZ < -80 * Math.PI / 180 Then ThetaZ = -80 * Math.PI / 180
+                        dR = dRz * Math.Cos(ThetaZ)
+                        dX = dR * Math.Cos(Theta)
+                        dY = dR * Math.Sin(Theta)
+                        dZ = dRz * Math.Sin(ThetaZ)
+
+                        'Now calculate the new Camera position
+                        TargetPos.X = dX + CameraPos.X
+                        TargetPos.Y = dY + CameraPos.Y
+                        TargetPos.Z = dZ + CameraPos.Z
+
+                        blnDraw = True
+                    End If
+
+                    If blnDraw Then     'Draw if needed
+                        hsbTargetX.Value = TargetPos.X
+                        hsbTargetY.Value = TargetPos.Y
+                        hsbTargetZ.Value = TargetPos.Z
+                        Redraw()
+                    End If
+
+                    StartPoint = EndPoint
+                    LastPoint = EndPoint
+
                 End If
 
-                'Amount of Y movement = amount of degrees of rotation in vertical plane
-                dTheta = EndPoint.Y - StartPoint.Y
-                If dTheta <> 0 Then
-                    Sensitivity = 0.18 / 59 * hsbCameraZoom.Value + 0.0169
-                    dX = TargetPos.X - CameraPos.X
-                    dY = TargetPos.Y - CameraPos.Y
-                    dZ = TargetPos.Z - CameraPos.Z
-                    dR = Math.Sqrt(dX ^ 2 + dY ^ 2) 'Horizontal radius
-                    Theta = Math.Atan2(dY, dX)      'Angle from Camera to Target
-
-                    dRz = Math.Sqrt(dR ^ 2 + dZ ^ 2)    '3D radius
-                    ThetaZ = Math.Atan2(dZ, dR)
-
-                    'Now increase Theta by the new angle
-                    ThetaZ += dTheta * Sensitivity * Math.PI / 180
-                    If ThetaZ > 80 * Math.PI / 180 Then ThetaZ = 80 * Math.PI / 180
-                    If ThetaZ < -80 * Math.PI / 180 Then ThetaZ = -80 * Math.PI / 180
-                    dR = dRz * Math.Cos(ThetaZ)
-                    dX = dR * Math.Cos(Theta)
-                    dY = dR * Math.Sin(Theta)
-                    dZ = dRz * Math.Sin(ThetaZ)
-
-                    'Now calculate the new Camera position
-                    TargetPos.X = dX + CameraPos.X
-                    TargetPos.Y = dY + CameraPos.Y
-                    TargetPos.Z = dZ + CameraPos.Z
-
-                    blnDraw = True
-                End If
-
-                If blnDraw Then     'Draw if needed
-                    hsbTargetX.Value = TargetPos.X
-                    hsbTargetY.Value = TargetPos.Y
-                    hsbTargetZ.Value = TargetPos.Z
-                    Redraw()
-                End If
-
-                StartPoint = EndPoint
-                LastPoint = EndPoint
             End If
 
             blnManualMode = True
