@@ -586,6 +586,7 @@ Public Class frmMain
         Dim h As Integer = glc3DView.Height
         Dim perspective, lookat As Matrix4
 
+        GL.Viewport(ViewportX, ViewportY, w, h) 'Size of window
 
         CameraPos.Xyz = New Vector3(hsbCameraX.Value, hsbCameraY.Value, hsbCameraZ.Value)
         TargetPos = New Vector4(hsbTargetX.Value, hsbTargetY.Value, hsbTargetZ.Value, 0)
@@ -615,16 +616,13 @@ Public Class frmMain
                 GL.Enable(EnableCap.Blend)
             End If
             DrawVectors()       'Draw in 3D space, Determines target and its bounds
-            If chbTransparent.Checked Then GL.Disable(EnableCap.Blend)
-
-            If chbAutotgt.Checked Then
-                    hsbTargetX.Value = (TgtXMax + TgtXMin) / 2
-                    hsbTargetY.Value = (TgtYMax + TgtYMin) / 2
-                    hsbTargetZ.Value = (TgtZMax + TgtZMin) / 2
-                End If
+            If chbTransparent.Checked Then
+                GL.Disable(EnableCap.Blend)
             End If
 
-            GL.Viewport(ViewportX, ViewportY, w, h) 'Size of window
+        End If
+
+        'GL.Viewport(ViewportX, ViewportY, w, h) 'Size of window
         GL.Enable(EnableCap.DepthTest) 'Enable correct Z Drawings
         GL.DepthFunc(DepthFunction.Less) 'Enable correct Z Drawings
 
@@ -1134,11 +1132,14 @@ Public Class frmMain
 
     Private Sub chbAutotgt_CheckedChanged(sender As Object, e As EventArgs) Handles chbAutotgt.CheckedChanged
         If blnManualMode Then
+            blnManualMode = False
             If chbAutotgt.Checked Then
-                blnManualMode = False
+                hsbTargetX.Value = (TgtXMax + TgtXMin) / 2
+                hsbTargetY.Value = (TgtYMax + TgtYMin) / 2
+                hsbTargetZ.Value = (TgtZMax + TgtZMin) / 2
                 Redraw()
-                blnManualMode = True
             End If
+            blnManualMode = True
         End If
     End Sub
 
