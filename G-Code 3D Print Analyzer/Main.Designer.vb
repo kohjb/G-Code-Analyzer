@@ -176,7 +176,7 @@ Partial Class frmMain
         Me.Label1.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.Label1.Size = New System.Drawing.Size(94, 27)
         Me.Label1.TabIndex = 5
-        Me.Label1.Text = "G-Code 3D Print Analyzer" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Koh Joo Beng" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Rev 1.0  4 Aug 2015"
+        Me.Label1.Text = "G-Code 3D Print Analyzer" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Koh Joo Beng" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Rev 2.0  22 Sep 2015"
         Me.Label1.TextAlign = System.Drawing.ContentAlignment.TopRight
         '
         'rtbInterpreted
@@ -715,6 +715,7 @@ Partial Class frmMain
         Me.chbSlow.TabIndex = 27
         Me.chbSlow.Text = "Slow"
         Me.chbSlow.UseVisualStyleBackColor = True
+        Me.chbSlow.Visible = False
         '
         'optColorRainbow
         '

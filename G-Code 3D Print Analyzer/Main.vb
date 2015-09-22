@@ -57,6 +57,7 @@ Public Class frmMain
     Dim TgtXMin, TgtXMax, TgtYMin, TgtYMax, TgtZMin, TgtZMax As Single
     Dim CameraUp As Vector4
     Dim ViewportX, ViewportY As Integer     'The bottom left of the viewport
+    Dim blnDrawTarget As Boolean = False
 
     'Backlash Params 
     Dim BacklashXmin, BacklashXmax, BacklashYmin, BacklashYMax, BacklashZMin, BacklashZMax, BacklashEMin, BacklashEMax As Single
@@ -81,7 +82,7 @@ Public Class frmMain
         GL.Clear(ClearBufferMask.ColorBufferBit Or ClearBufferMask.DepthBufferBit)  'Clear Color and Depth buffers
         GL.ClearColor(Color.Black)
 
-        SetupViewport()
+        DrawViewport()
 
         'Sync and Swap
         GraphicsContext.CurrentContext.VSync = True 'Caps frame rate as to not over run GPU        
@@ -580,7 +581,7 @@ Public Class frmMain
         End Select
     End Function
 
-    Private Sub SetupViewport()
+    Private Sub DrawViewport()
         'Setup the Graphics Viewport
         Dim w As Integer = glc3DView.Width
         Dim h As Integer = glc3DView.Height
@@ -603,6 +604,9 @@ Public Class frmMain
         'GL.Ortho(0, w, 0, h, 2000, -2000) 'Setup Orthographic Projection, bottom left is 0,0 (left, right, bottom, top, zmin, zmax) - zmin is furthest away
 
         DrawAxes()
+        If blnDrawTarget Then
+            DrawTarget()
+        End If
         If blngCodeLoaded Then
             If chbSlow.Checked Then
                 glc3DView.SwapBuffers()
@@ -942,6 +946,24 @@ Public Class frmMain
 
     End Sub
 
+    Private Sub DrawTarget()
+        'Draw a target point during camera pan, zoom, rotate operations
+        'Draw X, Y, Z Axis. Cube
+        Dim l As Integer = 5
+        GL.Begin(BeginMode.Lines)
+        'X-axis, Y, Z
+        GL.Color3(Color.Red)
+        GL.Vertex3(TargetPos.X - l, TargetPos.Y, TargetPos.Z)
+        GL.Vertex3(TargetPos.X + l, TargetPos.Y, TargetPos.Z)
+        GL.Color3(Color.Green)
+        GL.Vertex3(TargetPos.X, TargetPos.Y - l, TargetPos.Z)
+        GL.Vertex3(TargetPos.X, TargetPos.Y + l, TargetPos.Z)
+        GL.Color3(Color.Blue)
+        GL.Vertex3(TargetPos.X, TargetPos.Y, TargetPos.Z - l)
+        GL.Vertex3(TargetPos.X, TargetPos.Y, TargetPos.Z + l)
+        GL.End()
+    End Sub
+
     Private Sub Redraw()
         glc3DView.Invalidate()
         glc3DView.Update()
@@ -1019,7 +1041,7 @@ Public Class frmMain
     Public IsDragging As Boolean = False
     Public IsRightButton As Boolean = False
     Public isLeftButton As Boolean = False
-    Public StartPoint, FirstPoint, LastPoint As Point
+    Public StartPoint, EndPoint, FirstPoint, LastPoint As Point
 
     Private Sub btnDebug_Click(sender As Object, e As EventArgs) Handles btnDebug.Click
     End Sub
@@ -1192,6 +1214,7 @@ Public Class frmMain
         StartPoint = glc3DView.PointToScreen(New Point(e.X, e.Y))
         FirstPoint = StartPoint
         IsDragging = True
+        blnDrawTarget = True
         If e.Button = MouseButtons.Right Then
             IsRightButton = True
             isLeftButton = False
@@ -1209,6 +1232,10 @@ Public Class frmMain
 
     Private Sub glc3DView_MouseUp(sender As Object, e As MouseEventArgs) Handles glc3DView.MouseUp
         IsDragging = False
+        blnDrawTarget = False
+        StartPoint = EndPoint
+        LastPoint = EndPoint
+        Redraw()
     End Sub
 
     Private Sub glc3DView_MouseMove(sender As Object, e As MouseEventArgs) Handles glc3DView.MouseMove
@@ -1223,11 +1250,11 @@ Public Class frmMain
             If IsRightButton Then   'Rotate around target
                 Dim dTheta, Theta, ThetaZ, dX, dY, dZ, dR, dRz As Single
                 Dim blnDraw As Boolean = False
-                Dim EndPoint As Point = glc3DView.PointToScreen(New Point(e.X, e.Y))
                 Dim Sensitivity As Integer     'The number of degrees to move with each mouse move
                 'Debug.Print(EndPoint.X & ", " & EndPoint.Y)
 
                 'Amount of X movement = amount of degrees of rotation in horizontal plane
+                EndPoint = glc3DView.PointToScreen(New Point(e.X, e.Y))
                 dTheta = EndPoint.X - StartPoint.X
                 If dTheta <> 0 Then
                     Dim RotateZ, TranslateTgt, TranslateOrg As Matrix4
@@ -1277,8 +1304,8 @@ Public Class frmMain
 
                 If blnDraw Then     'Draw if needed
                     hsbCameraX.Value = Math.Max(Math.Min(CameraPos.X, hsbCameraX.Maximum), hsbCameraX.Minimum)
-                    hsbCameraY.Value = CameraPos.Y
-                    hsbCameraZ.Value = CameraPos.Z
+                    hsbCameraY.Value = Math.Min(CameraPos.Y, hsbCameraY.Maximum)
+                    hsbCameraZ.Value = Math.Min(CameraPos.Z, hsbCameraZ.Maximum)
                     Redraw()
                 End If
 
@@ -1294,16 +1321,17 @@ Public Class frmMain
 
                     Dim dTheta, Theta, ThetaZ, dX, dY, dZ, dR, dRz As Double
                     Dim blnDraw As Boolean = False
-                    Dim EndPoint As Point = glc3DView.PointToScreen(New Point(e.X, e.Y))
                     Dim Sensitivity As Single     'The number of degrees to move with each mouse move
                     chbAutotgt.Checked = False
                     Dim Dv, Uv, Hv, Vv, Cv, Tv As Vector3   'Cv = Camera vector
 
-                    Sensitivity = 0.5 * hsbCameraZoom.Value / 100
+                    Sensitivity = 0.5 * hsbCameraZoom.Value / 100 + 0.1
 
                     'Amount of X movement = units of translation in horizontal plane
+                    EndPoint = glc3DView.PointToScreen(New Point(e.X, e.Y))
                     dTheta = EndPoint.X - StartPoint.X
                     If dTheta <> 0 Then
+                        'Debug.Print(dTheta)
                         dTheta = -Sensitivity * dTheta
 
                         'Get vector from camera to target
@@ -1326,6 +1354,7 @@ Public Class frmMain
                         Tv = Vector3.Add(Tv, Hv)
                         CameraPos.Xyz = Cv
                         TargetPos.Xyz = Tv
+                        'Debug.Print(Hv.X & ", " & Hv.Y & ", " & Hv.Z)
                         blnDraw = True
                     End If
 
@@ -1358,10 +1387,10 @@ Public Class frmMain
                     End If
 
                     If blnDraw Then     'Draw if needed
-                        hsbCameraX.Value = CameraPos.X
+                        hsbCameraX.Value = Math.Min(CameraPos.X, hsbCameraX.Maximum)
                         hsbCameraY.Value = CameraPos.Y
                         hsbCameraZ.Value = CameraPos.Z
-                        hsbTargetX.Value = TargetPos.X
+                        hsbTargetX.Value = Math.Min(TargetPos.X, hsbTargetX.Maximum)
                         hsbTargetY.Value = TargetPos.Y
                         hsbTargetZ.Value = TargetPos.Z
                         Redraw()
@@ -1374,13 +1403,13 @@ Public Class frmMain
                 Else 'Rotate camera left right up down
                     Dim dTheta, Theta, ThetaZ, dX, dY, dZ, dR, dRz As Double
                     Dim blnDraw As Boolean = False
-                    Dim EndPoint As Point = glc3DView.PointToScreen(New Point(e.X, e.Y))
                     Dim Sensitivity As Single     'The number of degrees to move with each mouse move
                     'Debug.Print(EndPoint.X & ", " & EndPoint.Y)
 
                     chbAutotgt.Checked = False
 
                     'Amount of X movement = amount of degrees of rotation in horizontal plane
+                    EndPoint = glc3DView.PointToScreen(New Point(e.X, e.Y))
                     dTheta = EndPoint.X - StartPoint.X
                     If dTheta <> 0 Then
                         Sensitivity = 0.18 / 59 * hsbCameraZoom.Value + 0.0169
@@ -1554,6 +1583,7 @@ Public Class frmMain
                 rtbInterpreted.SelectionStart = charStart
                 rtbInterpreted.SelectionLength = charEnd - rtbInterpreted.SelectionStart
                 rtbInterpreted.Focus()
+                blnManualMode = True
             End If
 
             Redraw()
